@@ -1,0 +1,37 @@
+
+Supported Extensions:
+VK_KHR_device_group_creation
+VK_KHR_external_fence_capabilities
+VK_KHR_external_memory_capabilities
+VK_KHR_external_semaphore_capabilities
+VK_KHR_get_physical_device_properties2
+VK_KHR_get_surface_capabilities2
+VK_KHR_surface
+VK_KHR_win32_surface
+VK_EXT_debug_report
+VK_EXT_swapchain_colorspace
+VK_NV_external_memory_capabilities
+VK_EXT_debug_utils
+
+Needed Extensions:
+VK_KHR_surface
+VK_KHR_win32_surface
+VK_EXT_debug_utils
+VK_EXT_debug_report
+
+All Extensions supported.
+
+Supported validation layers:
+VK_LAYER_LUNARG_standard_validation
+Vulkan Instance created
+WARNING: present mode not supported on this physical device
+QueueFamily Added
+Physical device selected
+Logical device created
+Logical device created
+WARNING: present mode not supported on this physical device
+Swap chain created
+Logical device destroyed
+Swap chain destroyed
+Logical device destroyed
+Vulkan Instance destroyed
