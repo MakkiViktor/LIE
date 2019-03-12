@@ -21,9 +21,9 @@ public:
 	Instance (const Extension& extensions, const VkAllocationCallbacks* allocator = nullptr);
 	~Instance ();
 	VkInstance& GetInstance ();
-private:
-	void FillAppInfo (VkApplicationInfo& appInfo);
-	void FillCreateInfo (VkInstanceCreateInfo& createInfo, const VkApplicationInfo& appInfo, const Extension& extensions);
+protected:
+	virtual void FillAppInfo (VkApplicationInfo& appInfo);
+	virtual void FillCreateInfo (VkInstanceCreateInfo& createInfo, const VkApplicationInfo& appInfo, const Extension& extensions);
 };
 
 }

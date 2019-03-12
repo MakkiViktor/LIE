@@ -12,17 +12,17 @@ namespace VK{
 //PhysicalDeviceDetails
 
 PhysicalDeviceDetails::PhysicalDeviceDetails (){
-	AddDeviceExtensions ({VK_KHR_SWAPCHAIN_EXTENSION_NAME});
-	AddQueueFamilyInfos ({VK::QueueFamilyInfo::graphicsFamilyQueueInfo});
+	SetDeviceExtensions ({VK_KHR_SWAPCHAIN_EXTENSION_NAME});
+	SetQueueFamilyInfos ({VK::QueueFamilyInfo::graphicsFamilyQueueInfo});
 }
 
-void PhysicalDeviceDetails::AddQueueFamilyInfos (const std::vector<QueueFamilyInfo>& infos){
+void PhysicalDeviceDetails::SetQueueFamilyInfos (const std::vector<QueueFamilyInfo>& infos){
 	queueFamilyInfos = infos;
 }
-void PhysicalDeviceDetails::AddDeviceExtensions (const std::vector<const char*>& deviceExtensions){
+void PhysicalDeviceDetails::SetDeviceExtensions (const std::vector<const char*>& deviceExtensions){
 	this->deviceExtensions = deviceExtensions;
 }
-void PhysicalDeviceDetails::AddEnabledFeatures (const VkPhysicalDeviceFeatures & enabledFeatures){
+void PhysicalDeviceDetails::SetEnabledFeatures (const VkPhysicalDeviceFeatures & enabledFeatures){
 	this->enabledFeatures = enabledFeatures;
 }
 
@@ -80,7 +80,7 @@ std::vector<U32> PhysicalDevice::GetQueueFamilyIndicesArray () const{
 	return indices;
 }
 
-QueueFamilyIndex PhysicalDevice::GetQueueFamilyIndexByFlag (VkQueueFlagBits queueFlag){
+QueueFamilyIndex PhysicalDevice::GetQueueFamilyIndexByFlag (VkQueueFlagBits queueFlag) const{
 	for(auto qi : queueFamilyIndices){
 		if(qi.queueFlag == queueFlag)
 			return qi;
@@ -179,7 +179,7 @@ bool PhysicalDevice::IsDeviceSuitable (const VkPhysicalDevice & device, const Su
 		return false;
 	if(!SwapChainDetails::IsPhysicalDeviceSuitable (surface, device))
 		return false;
-	//TODO majd a propertyket is chekkolni
+
 	return true;
 }
 

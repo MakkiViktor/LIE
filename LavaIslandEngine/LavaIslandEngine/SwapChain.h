@@ -49,23 +49,25 @@ private:
 	std::vector<VkImage> swapChainImages;
 	const LogicalDevice& logicalDevice;
 	const VkAllocationCallbacks* allocator;
-	const VkFormat format;
-	const VkExtent2D extent;
+	VkFormat format;
+	VkExtent2D extent;
 	U32 imageCount;
-
-	void FillCreateInfo (const Surface& surface,
-						 const PhysicalDevice& physicalDevice,
-						 const SwapChainDetails& details,
-						 VkSwapchainCreateInfoKHR& createInfo);
 	void FillSwapChainImages ();
 public:
-	SwapChain (const Surface& surface, const LogicalDevice& logicalDevice, const SwapChainDetails& details, const VkAllocationCallbacks* allocator = nullptr);
+	SwapChain (const Surface& surface, const LogicalDevice& logicalDevice, const VkAllocationCallbacks* allocator = nullptr);
 	~SwapChain ();
 
 	U16	GetImageCount () const;
 	const std::vector<VkImage> GetImages () const;
 	const VkSwapchainKHR& GetSwapchain () const;
 	const VkFormat& GetFormat () const;
+	const LogicalDevice& GetLogicalDevice () const;
+	const VkExtent2D& GetExtent () const;
+protected:
+	virtual void FillCreateInfo (const Surface& surface,
+								const PhysicalDevice& physicalDevice,
+								VkSwapchainCreateInfoKHR& createInfo);
+
 };
 }
 

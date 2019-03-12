@@ -159,14 +159,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CommandBuffers.cpp" />
+    <ClCompile Include="CommandPool.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="Extension.cpp" />
+    <ClCompile Include="FrameBuffers.cpp" />
     <ClCompile Include="GLFWGuard.cpp" />
     <ClCompile Include="ImageViews.cpp" />
     <ClCompile Include="Instance.cpp" />
     <ClCompile Include="LogicalDevice.cpp" />
     <ClCompile Include="PhysicalDevice.cpp" />
+    <ClCompile Include="Pipeline.cpp" />
     <ClCompile Include="Queue.cpp" />
+    <ClCompile Include="RenderPass.cpp" />
+    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Starter.cpp" />
     <ClCompile Include="StructureOperations.cpp" />
     <ClCompile Include="SwapChain.cpp" />
@@ -178,14 +184,20 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CommandBuffers.h" />
+    <ClInclude Include="CommandPool.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Extension.h" />
+    <ClInclude Include="FrameBuffers.h" />
     <ClInclude Include="GLFWGuard.h" />
     <ClInclude Include="ImageViews.h" />
     <ClInclude Include="Instance.h" />
     <ClInclude Include="LogicalDevice.h" />
     <ClInclude Include="PhysicalDevice.h" />
+    <ClInclude Include="Pipeline.h" />
     <ClInclude Include="Queue.h" />
+    <ClInclude Include="RenderPass.h" />
+    <ClInclude Include="Shader.h" />
     <ClInclude Include="StructureOperations.h" />
     <ClInclude Include="Surface.h" />
     <ClInclude Include="SwapChain.h" />

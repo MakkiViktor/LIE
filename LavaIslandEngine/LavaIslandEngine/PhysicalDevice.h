@@ -47,13 +47,13 @@ class PhysicalDeviceDetails{
 	VkPhysicalDeviceFeatures enabledFeatures = {};
 public:
 	PhysicalDeviceDetails ();
-	void AddQueueFamilyInfos (const std::vector<QueueFamilyInfo>& infos);
-	void AddDeviceExtensions (const std::vector<const char*>& deviceExtensions);
-	void AddEnabledFeatures (const VkPhysicalDeviceFeatures& enabledFeatures);
+	void SetQueueFamilyInfos (const std::vector<QueueFamilyInfo>& infos);
+	void SetDeviceExtensions (const std::vector<const char*>& deviceExtensions);
+	void SetEnabledFeatures (const VkPhysicalDeviceFeatures& enabledFeatures);
 
 	const std::vector<QueueFamilyInfo>& GetQueueFamilyInfos () const;
 	const VkPhysicalDeviceFeatures& GetEnabledFeatures () const;
-	const const std::vector<const char*>& GetDeviceExtensions () const;
+	const std::vector<const char*>& GetDeviceExtensions () const;
 };
 
 class PhysicalDevice{
@@ -81,11 +81,11 @@ public:
 	~PhysicalDevice ();
 	
 	VkPhysicalDevice GetPhysicalDevice () const;
-	QueueFamilyIndex GetQueueFamilyIndexByFlag (VkQueueFlagBits queueFlag);
+	QueueFamilyIndex GetQueueFamilyIndexByFlag (VkQueueFlagBits queueFlag) const;
 	const std::vector<QueueFamilyIndex>& GetQueueFamilyIndices () const;
 	std::vector<U32> GetQueueFamilyIndicesArray () const;
 	const VkPhysicalDeviceFeatures& GetEnabledFeatures () const;
-	const const std::vector<const char*>& GetDeviceExtensions () const;
+	const std::vector<const char*>& GetDeviceExtensions () const;
 
 	static VkPhysicalDeviceFeatures GetDeviceFeatures (const VkPhysicalDevice& device);
 	static VkPhysicalDeviceProperties GetDeviceProperties (const VkPhysicalDevice& device);

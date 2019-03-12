@@ -51,9 +51,9 @@ void LogicalDevice::FillQueueCreateInfo (const QueueFamilyIndex& queueFamilyInde
 void LogicalDevice::FillDeviceCreateInfo (const std::vector<VkDeviceQueueCreateInfo>& queueCreateInfos, VkDeviceCreateInfo& createInfo){
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
-	createInfo.queueCreateInfoCount = queueCreateInfos.size();
+	createInfo.queueCreateInfoCount = static_cast<U32>(queueCreateInfos.size());
 	createInfo.pEnabledFeatures = &physicalDevice.GetEnabledFeatures();
-	createInfo.enabledExtensionCount = physicalDevice.GetDeviceExtensions().size(); 
+	createInfo.enabledExtensionCount = static_cast<U32>(physicalDevice.GetDeviceExtensions().size());
 	createInfo.ppEnabledExtensionNames = physicalDevice.GetDeviceExtensions ().data ();
 	if(IS_DEBUG){
 		createInfo.enabledLayerCount = static_cast<uint32_t>(LIE::Debug::GetValidationLayers().size());

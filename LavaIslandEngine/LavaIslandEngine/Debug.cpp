@@ -22,7 +22,7 @@ std::string Debug::fileName = " Log.txt";
 bool Debug::validationLayerChecked = false;
 
 const std::vector<const char*> Debug::validationLayers = {
-"VK_LAYER_LUNARG_standard_validation"
+"VK_LAYER_LUNARG_standard_validation",
 };
 
 VKAPI_ATTR VkBool32 VKAPI_CALL Debug::VKDebugCallback (

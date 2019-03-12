@@ -16,14 +16,15 @@ private:
 	VkDevice logicalDevice = VK_NULL_HANDLE;
 	const PhysicalDevice& physicalDevice;
 	const VkAllocationCallbacks* allocator;
-
-	void FillQueueCreateInfo (const QueueFamilyIndex& queueFamilyIndex,VkDeviceQueueCreateInfo& queueCreateInfo);
-	void FillDeviceCreateInfo (const std::vector<VkDeviceQueueCreateInfo>& queueCreateInfos,VkDeviceCreateInfo& createInfo);
 public:
 	LogicalDevice (const PhysicalDevice& physicalDevice, const VkAllocationCallbacks* allocator = nullptr);
 	~LogicalDevice ();
 	const VkDevice& GetLogicalDevice () const;
 	const PhysicalDevice& GetPhysicalDevice () const;
+protected:
+	virtual void FillQueueCreateInfo (const QueueFamilyIndex& queueFamilyIndex,VkDeviceQueueCreateInfo& queueCreateInfo);
+	virtual void FillDeviceCreateInfo (const std::vector<VkDeviceQueueCreateInfo>& queueCreateInfos,VkDeviceCreateInfo& createInfo);
+
 };
 
 }

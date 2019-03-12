@@ -143,16 +143,16 @@ void SwapChainDetails::SelectImageCount (){
 
 SwapChain::SwapChain (const Surface & surface,
 					  const LogicalDevice& logicalDevice,
-					  const SwapChainDetails & details,
-					  const VkAllocationCallbacks* allocator):
-allocator(allocator),
-logicalDevice(logicalDevice),
-imageCount(details.GetImageCount()),
-format(details.GetSurfaceFormat().format),
-extent(details.GetExtent()){
+					  const VkAllocationCallbacks* allocator) :
+	allocator (allocator),
+	logicalDevice (logicalDevice)
 
+{
 	VkSwapchainCreateInfoKHR createInfo = {};
-	FillCreateInfo (surface, logicalDevice.GetPhysicalDevice (), details, createInfo);
+	FillCreateInfo (surface, logicalDevice.GetPhysicalDevice (), createInfo);
+	format =  createInfo.imageFormat;
+	extent = createInfo.imageExtent;
+	imageCount = createInfo.minImageCount;
 	if(vkCreateSwapchainKHR (logicalDevice.GetLogicalDevice(), &createInfo, allocator, &swapChain) != VK_SUCCESS){
 		ERROR ("failed to create swap chain!");
 	}
@@ -182,10 +182,18 @@ const VkFormat & SwapChain::GetFormat () const{
 	return format;
 }
 
+const LogicalDevice & SwapChain::GetLogicalDevice () const{
+	return logicalDevice;
+}
+
+const VkExtent2D & SwapChain::GetExtent () const{
+	return extent;
+}
+
 void SwapChain::FillCreateInfo (const Surface& surface, 
 								const PhysicalDevice& physicalDevice, 
-								const SwapChainDetails& details,
 								VkSwapchainCreateInfoKHR & createInfo){
+	SwapChainDetails details (surface, logicalDevice);
 	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	createInfo.surface = surface.GetSurface ();
 	createInfo.minImageCount = details.GetImageCount ();
@@ -205,7 +213,7 @@ void SwapChain::FillCreateInfo (const Surface& surface,
 
 	if(queueFamilyIndices.size () > 1){
 		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-		createInfo.queueFamilyIndexCount = queueFamilyIndices.size ();
+		createInfo.queueFamilyIndexCount = static_cast<U32>(queueFamilyIndices.size ());
 		createInfo.pQueueFamilyIndices = queueFamilyIndices.data ();
 	}
 	else{

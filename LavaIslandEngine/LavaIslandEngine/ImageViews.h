@@ -11,33 +11,20 @@ namespace VK{
 
 class SwapChain;
 
-class ImageViewsDetails{
-private:
-	VkImageViewType viewType;
-	VkComponentMapping mapping;
-	VkImageSubresourceRange subresourceRange;
-public:
-	ImageViewsDetails();
-
-	void SetViewType (VkImageViewType viewType);
-	void SetComponentMapping (VkComponentMapping componentMapping);
-	void SetSubresourceRange (VkImageSubresourceRange subresourceRange);
-
-	VkImageViewType GetViewType () const;
-	VkComponentMapping GetComponentMapping () const;
-	VkImageSubresourceRange GetSubresourceRange () const;
-};
-
 class ImageViews{
 private:
 	std::vector<VkImageView> swapChainImageViews;
+	const VkExtent2D extent;
 	const LogicalDevice& device;
 	const VkAllocationCallbacks* allocator;
-
-	void FillCreateInfo (VkImageViewCreateInfo & createInfo, const VkImage& image, const SwapChain& swapchain, const ImageViewsDetails & details);
 public:
-	ImageViews (const LogicalDevice& device, const SwapChain& swapChain, const ImageViewsDetails& details, const VkAllocationCallbacks* allocator = nullptr);
+	ImageViews (const SwapChain& swapChain, const VkAllocationCallbacks* allocator = nullptr);
 	~ImageViews ();
+	const std::vector<VkImageView>& GetImageViews () const;
+	const VkExtent2D& GetExtent () const;
+	const LogicalDevice& GetLogicalDevice () const;
+protected:
+	virtual void FillCreateInfo (VkImageViewCreateInfo & createInfo, const VkImage& image, const SwapChain& swapchain);
 };
 }
 
