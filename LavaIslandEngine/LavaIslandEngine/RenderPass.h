@@ -3,10 +3,8 @@
 
 #pragma once
 
-#include "vulkan/vulkan.h"
-#include <vector>
-
 #include "LogicalDevice.h"
+#include "CopyInfo.h"
 
 namespace VK{
 
@@ -14,16 +12,17 @@ class SwapChain;
 
 class RenderPass{
 private:
-	VkRenderPass renderPass;
-	const VkAllocationCallbacks* allocator;
-	const LogicalDevice& device;
-public:
-	RenderPass (const SwapChain& swapChain, const VkAllocationCallbacks* allocator = nullptr);
-	~RenderPass ();
-	const VkRenderPass& GetRenderPass () const;
-protected:
+	VkRenderPass renderPass = VK_NULL_HANDLE;
+	VkAllocationCallbacks* allocator;
+	VkDevice device;
+
 	virtual void FillColorAttachment (std::vector<VkAttachmentDescription>& colorAttachments, VkFormat format);
 	virtual void FillSubPassDescription (std::vector<VkSubpassDescription>& subpasses, VkAttachmentReference& colorAttachmentRef);
+	virtual void FillSubpassDependency (std::vector<VkSubpassDependency>& dependencies);
+public:
+	void Create (const SwapChain& swapChain, VkAllocationCallbacks* allocator = nullptr);
+	void Destroy ();
+	const VkRenderPass& GetRenderPass () const;
 };
 }
 

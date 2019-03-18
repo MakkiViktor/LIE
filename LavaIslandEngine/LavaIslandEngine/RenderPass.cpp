@@ -4,30 +4,39 @@
 
 namespace VK{
 
-RenderPass::RenderPass (const SwapChain & swapChain, const VkAllocationCallbacks* allocator):
-device(swapChain.GetLogicalDevice()){
+void RenderPass::Create (const SwapChain& swapChain, VkAllocationCallbacks* allocator){
+	this->allocator = allocator;
+	device = swapChain.GetLogicalDevice ();
+
 	std::vector<VkAttachmentDescription> colorAttachments;
 	std::vector<VkSubpassDescription> subpasses;
+	std::vector<VkSubpassDependency> dependencies;
 	VkAttachmentReference colorAttachmentRef = {};
 	FillColorAttachment (colorAttachments, swapChain.GetFormat ());
 	FillSubPassDescription (subpasses, colorAttachmentRef);
+	FillSubpassDependency (dependencies);
 
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = static_cast<U32> (colorAttachments.size());
-	renderPassInfo.pAttachments = colorAttachments.data();
+	renderPassInfo.attachmentCount = static_cast<U32> (colorAttachments.size ());
+	renderPassInfo.pAttachments = colorAttachments.data ();
 	renderPassInfo.subpassCount = static_cast<U32> (subpasses.size ());
-	renderPassInfo.pSubpasses = subpasses.data();
-	if(vkCreateRenderPass (device.GetLogicalDevice(), &renderPassInfo, allocator, &renderPass) != VK_SUCCESS){
+	renderPassInfo.pSubpasses = subpasses.data ();
+	renderPassInfo.dependencyCount = static_cast<U32>(dependencies.size ());
+	renderPassInfo.pDependencies = dependencies.data ();
+
+	if(vkCreateRenderPass (device, &renderPassInfo, allocator, &renderPass) != VK_SUCCESS){
 		ERROR ("failed to create render pass!");
 	}
-
 	PRINT ("RenderPass created");
 }
 
-RenderPass::~RenderPass (){
-	vkDestroyRenderPass (device.GetLogicalDevice(), renderPass, allocator);
-	PRINT ("RenderPass destroyed");
+void RenderPass::Destroy (){
+	if(renderPass != VK_NULL_HANDLE){
+		vkDestroyRenderPass (device, renderPass, allocator);
+		renderPass = VK_NULL_HANDLE;
+		PRINT ("RenderPass destroyed");
+	}
 }
 
 const VkRenderPass & RenderPass::GetRenderPass () const{
@@ -59,5 +68,15 @@ void RenderPass::FillSubPassDescription (std::vector<VkSubpassDescription>& subp
 	subpasses.push_back (subpass);
 }
 
+void RenderPass::FillSubpassDependency (std::vector<VkSubpassDependency>& dependencies){
+	VkSubpassDependency dependency = {};
+	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependency.dstSubpass = 0;
+	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.srcAccessMask = 0;
+	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	dependencies.push_back (dependency);
+}
 }
 

@@ -2,27 +2,31 @@
 
 namespace VK{
 
-CommandPool::CommandPool (const LogicalDevice & device, const VkAllocationCallbacks* allocator):
-device(device),
-allocator(allocator){
+
+void CommandPool::Create (const LogicalDevice & device, VkAllocationCallbacks* allocator){
+	this->device = device.GetLogicalDevice();
+	allocator = allocator;
 	VkCommandPoolCreateInfo poolInfo = {};
 	FillCreateInfo (poolInfo, device.GetPhysicalDevice ());
-	if(vkCreateCommandPool (device.GetLogicalDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS){
+	if(vkCreateCommandPool (device.GetLogicalDevice (), &poolInfo, nullptr, &commandPool) != VK_SUCCESS){
 		ERROR ("failed to create command pool!");
 	}
 	PRINT ("Command pool created");
 }
 
-CommandPool::~CommandPool (){
-	vkDestroyCommandPool (device.GetLogicalDevice(), commandPool, allocator);
-	PRINT ("Command pool destroyed");
+void CommandPool::Destroy (){
+	if(commandPool != VK_NULL_HANDLE){
+		vkDestroyCommandPool (device, commandPool, allocator);
+		PRINT ("Command pool destroyed");
+		commandPool = VK_NULL_HANDLE;
+	}
 }
 
 const VkCommandPool & CommandPool::GetCommandPool () const{
 	return commandPool;
 }
 
-const LogicalDevice & CommandPool::GetLogicalDevice () const{
+VkDevice CommandPool::GetLogicalDevice () const{
 	return device;
 }
 

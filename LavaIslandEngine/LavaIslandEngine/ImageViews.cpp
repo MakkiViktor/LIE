@@ -4,11 +4,12 @@
 
 namespace VK{
 //ImageViews
-ImageViews::ImageViews (const SwapChain & swapChain, const VkAllocationCallbacks* allocator):
-device(swapChain.GetLogicalDevice()),
-allocator(allocator),
-extent(swapChain.GetExtent())
-{
+
+void ImageViews::Create (const SwapChain& swapChain, VkAllocationCallbacks* allocator){
+	device = swapChain.GetLogicalDevice ();
+	extent = swapChain.GetExtent ();
+	this->allocator = allocator;
+
 	std::vector<VkImage> images (swapChain.GetImages ());
 	swapChainImageViews.resize (images.size ());
 
@@ -16,17 +17,20 @@ extent(swapChain.GetExtent())
 		VkImageViewCreateInfo createInfo = {};
 		FillCreateInfo (createInfo, images[i], swapChain);
 
-		if(vkCreateImageView (device.GetLogicalDevice(), &createInfo, allocator, &swapChainImageViews[i]) != VK_SUCCESS){
+		if(vkCreateImageView (device, &createInfo, allocator, &swapChainImageViews[i]) != VK_SUCCESS){
 			ERROR ("failed to create image views!");
 		}
-		PRINT (std::string("Image View Created"));
+		PRINT (std::string ("Image View Created"));
 	}
 }
 
-ImageViews::~ImageViews (){
+void ImageViews::Destroy (){
 	for(auto imageView : swapChainImageViews){
-		vkDestroyImageView (device.GetLogicalDevice(), imageView, allocator);
-		PRINT (std::string ("Image View Destroyed"));
+		if(imageView != VK_NULL_HANDLE){
+			vkDestroyImageView (device, imageView, allocator);
+			imageView = VK_NULL_HANDLE;
+			PRINT (std::string ("Image View Destroyed"));
+		}
 	}
 }
 
@@ -38,7 +42,7 @@ const VkExtent2D & ImageViews::GetExtent () const{
 	return extent;
 }
 
-const LogicalDevice & ImageViews::GetLogicalDevice () const{
+VkDevice ImageViews::GetLogicalDevice () const{
 	return device;
 }
 

@@ -12,24 +12,23 @@ class ImageViews;
 
 class FrameBuffers{
 private:
-	const LogicalDevice& device;
-	const VkExtent2D extent;
+	VkDevice device;
+	VkExtent2D extent;
 	std::vector<VkFramebuffer> frameBuffers;
-	const std::vector<VkImageView>& swapChainImageViews;
-	const RenderPass& renderPass;
-	const VkAllocationCallbacks* allocator;
+	RenderPass renderPass;
+	VkAllocationCallbacks* allocator;
+
+	virtual void FillCreateInfo (VkFramebufferCreateInfo& framebufferInfo,
+						 const std::vector<VkImageView>& attachments,
+						 const RenderPass& renderPass, const VkExtent2D& extent);
+	virtual void FillAttachments (std::vector<VkImageView>& attachments, const std::vector<VkImageView> swapChainImageViews, U16 index);
 public:
-	FrameBuffers (const ImageViews& imageViews, const RenderPass& renderPass, const VkAllocationCallbacks* allocator = nullptr);
-	~FrameBuffers ();
+	void Create (const ImageViews& imageViews, const RenderPass& renderPass, VkAllocationCallbacks* allocator = nullptr);
+	void Destroy ();
 	U16 Size () const;
 	const RenderPass& GetRenderPass () const;
 	const VkExtent2D& GetExtent () const;
 	const VkFramebuffer& operator[](U16 index) const;
-protected:
-	virtual void FillCreateInfo (VkFramebufferCreateInfo& framebufferInfo,
-						 const std::vector<VkImageView>& attachments,
-						 const RenderPass& renderPass, const VkExtent2D& extent);
-	virtual void FillAttachments (std::vector<VkImageView>& attachments, U16 index);
 };
 
 }

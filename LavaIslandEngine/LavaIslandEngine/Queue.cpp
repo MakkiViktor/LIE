@@ -4,8 +4,12 @@
 
 namespace VK{
 
-Queue::Queue (const LogicalDevice& logicalDevice, const QueueFamilyIndex& queueFamilyIndex){
-	vkGetDeviceQueue (logicalDevice.GetLogicalDevice(), queueFamilyIndex.queueFamily.value (), 0, &queue);
+void Queue::Create (const LogicalDevice & logicalDevice, const QueueFamilyIndex & queueFamilyIndex){
+	vkGetDeviceQueue (logicalDevice.GetLogicalDevice (), queueFamilyIndex.queueFamily.value (), 0, &queue);
 }
-Queue::~Queue (){}
+
+const VkQueue & Queue::GetQueue () const{
+	return queue;
+}
+
 }

@@ -13,11 +13,11 @@ class Window
 private:
 	GLFWwindow* window;
 public:
-	Window(U16 width, U16 height);
-	~Window();
+	void Create (U16 width, U16 height);
+	void Destroy ();
 
-	bool isClosed();
-	GLFWwindow* GetWindow () ;
+	bool IsClosed() const;
+	GLFWwindow* GetWindow ();
 };
 
 }

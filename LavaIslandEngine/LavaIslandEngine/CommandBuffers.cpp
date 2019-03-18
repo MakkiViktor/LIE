@@ -5,19 +5,19 @@
 
 namespace VK{
 
-CommandBuffers::CommandBuffers (const CommandPool& commandPool, const Pipeline & pipeline, const FrameBuffers& frameBuffers){
-	commandBuffers.resize (frameBuffers.Size());
+void CommandBuffers::Create (const CommandPool & commandPool, const std::vector<Pipeline>& pipelines, const FrameBuffers & frameBuffers){
+	commandBuffers.resize (frameBuffers.Size ());
 	VkCommandBufferAllocateInfo allocInfo = {};
 	FillAllocateInfo (allocInfo);
-	allocInfo.commandPool = commandPool.GetCommandPool();
+	allocInfo.commandPool = commandPool.GetCommandPool ();
 	allocInfo.commandBufferCount = static_cast<U32>(commandBuffers.size ());
 
-	if(vkAllocateCommandBuffers (commandPool.GetLogicalDevice().GetLogicalDevice(), &allocInfo, commandBuffers.data ()) != VK_SUCCESS){
+	if(vkAllocateCommandBuffers (commandPool.GetLogicalDevice (), &allocInfo, commandBuffers.data ()) != VK_SUCCESS){
 		ERROR ("failed to allocate command buffers!");
 	}
 
 	for(U16 i = 0; i < commandBuffers.size (); i++){
-		
+
 		VkCommandBufferBeginInfo beginInfo = {};
 		FillBeginInfo (beginInfo);
 		if(vkBeginCommandBuffer (commandBuffers[i], &beginInfo) != VK_SUCCESS){
@@ -28,23 +28,29 @@ CommandBuffers::CommandBuffers (const CommandPool& commandPool, const Pipeline &
 		VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
 		FillRenderPassInfo (renderPassInfo, clearColor, frameBuffers.GetExtent ());
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = frameBuffers.GetRenderPass().GetRenderPass();
+		renderPassInfo.renderPass = frameBuffers.GetRenderPass ().GetRenderPass ();
 		renderPassInfo.framebuffer = frameBuffers[i];
 
 		vkCmdBeginRenderPass (commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-		FillCommands (pipeline, commandBuffers[i]);
+		FillCommands (pipelines, commandBuffers[i]);
 		if(vkEndCommandBuffer (commandBuffers[i]) != VK_SUCCESS){
 			ERROR ("failed to record command buffer!");
 		}
-		
+
 	}
 	PRINT ("Command buffers set up");
 
 }
 
-void CommandBuffers::FillCommands (const Pipeline& pipeline, const VkCommandBuffer& commandBuffer){
+const VkCommandBuffer& CommandBuffers::operator[](U16 index) const{
+	return commandBuffers[index];
+}
+
+void CommandBuffers::FillCommands (const std::vector<Pipeline>& pipelines, const VkCommandBuffer& commandBuffer){
+	for(const Pipeline& pipeline : pipelines){
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.GetPipeline());
 		vkCmdDraw (commandBuffer, 3, 1, 0, 0);
+	}
 }
 
 void CommandBuffers::FillAllocateInfo (VkCommandBufferAllocateInfo& allocInfo){
@@ -60,8 +66,9 @@ void CommandBuffers::FillBeginInfo (VkCommandBufferBeginInfo& beginInfo){
 void CommandBuffers::FillRenderPassInfo (VkRenderPassBeginInfo& renderPassInfo, VkClearValue& clearColor, const VkExtent2D& extent){
 	renderPassInfo.renderArea.offset = {0, 0};
 	renderPassInfo.renderArea.extent = extent;
-	renderPassInfo.clearValueCount = 1;
+	renderPassInfo.clearValueCount = 1; 
 	renderPassInfo.pClearValues = &clearColor;
 }
+
 
 }

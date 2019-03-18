@@ -4,6 +4,7 @@
 #pragma once
 
 #include "LogicalDevice.h"
+#include "CopyInfo.h"
 
 namespace VK{
 
@@ -18,7 +19,6 @@ private:
 	VkExtent2D extent;
 	U32 imageCount = 0;
 
-	SwapChainDetails (const Surface& surface, const VkPhysicalDevice& physicalDevice);
 	
 	void FillFormats (const Surface& surface, const VkPhysicalDevice& physicalDevice);
 	void FillPresentModes (const Surface& surface, const VkPhysicalDevice& physicalDevice);
@@ -30,7 +30,7 @@ private:
 	void SelectImageCount ();
 	bool IsComplete ();
 public:
-	SwapChainDetails (const Surface& surface, const LogicalDevice& logicalDevice);
+	SwapChainDetails (const Surface& surface, const VkPhysicalDevice& physicalDevice);
 	VkSurfaceFormatKHR GetSurfaceFormat () const;
 	VkPresentModeKHR GetPresentMode () const;
 	VkExtent2D GetExtent () const;
@@ -47,27 +47,27 @@ class SwapChain{
 private:
 	VkSwapchainKHR swapChain;
 	std::vector<VkImage> swapChainImages;
-	const LogicalDevice& logicalDevice;
-	const VkAllocationCallbacks* allocator;
+	VkDevice device;
+	VkAllocationCallbacks* allocator;
 	VkFormat format;
 	VkExtent2D extent;
 	U32 imageCount;
+
 	void FillSwapChainImages ();
+
+	virtual void FillCreateInfo (const Surface& surface,
+								const PhysicalDevice& physicalDevice,
+								VkSwapchainCreateInfoKHR& createInfo);
 public:
-	SwapChain (const Surface& surface, const LogicalDevice& logicalDevice, const VkAllocationCallbacks* allocator = nullptr);
-	~SwapChain ();
+	void Create (const LogicalDevice& logicalDevice, const Surface& surface, VkAllocationCallbacks* allocator = nullptr);
+	void Destroy ();
 
 	U16	GetImageCount () const;
 	const std::vector<VkImage> GetImages () const;
 	const VkSwapchainKHR& GetSwapchain () const;
 	const VkFormat& GetFormat () const;
-	const LogicalDevice& GetLogicalDevice () const;
+	VkDevice GetLogicalDevice () const;
 	const VkExtent2D& GetExtent () const;
-protected:
-	virtual void FillCreateInfo (const Surface& surface,
-								const PhysicalDevice& physicalDevice,
-								VkSwapchainCreateInfoKHR& createInfo);
-
 };
 }
 

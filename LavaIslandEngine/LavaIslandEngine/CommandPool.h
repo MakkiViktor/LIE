@@ -9,16 +9,16 @@ namespace VK{
 	
 class CommandPool{
 private:
-	const LogicalDevice& device;
-	const VkAllocationCallbacks* allocator;
-	VkCommandPool commandPool;
-public:
-	CommandPool (const LogicalDevice& device, const VkAllocationCallbacks* allocator = nullptr);
-	~CommandPool ();
-	const VkCommandPool& GetCommandPool () const;
-	const LogicalDevice& GetLogicalDevice () const;
-protected:
+	VkDevice device;
+	VkAllocationCallbacks* allocator;
+	VkCommandPool commandPool = VK_NULL_HANDLE;
 	virtual void FillCreateInfo (VkCommandPoolCreateInfo poolInfo, const PhysicalDevice& physicalDevice);
+public:
+	void Create (const LogicalDevice& device, VkAllocationCallbacks* allocator = nullptr);
+	void Destroy ();
+	const VkCommandPool& GetCommandPool () const;
+	VkDevice GetLogicalDevice () const;
+
 };
 
 }

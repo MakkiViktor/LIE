@@ -22,7 +22,7 @@ std::string Debug::fileName = " Log.txt";
 bool Debug::validationLayerChecked = false;
 
 const std::vector<const char*> Debug::validationLayers = {
-"VK_LAYER_LUNARG_standard_validation",
+"VK_LAYER_LUNARG_standard_validation"
 };
 
 VKAPI_ATTR VkBool32 VKAPI_CALL Debug::VKDebugCallback (
@@ -165,12 +165,14 @@ void Debug::Break (){
 	if(MSC_VER && IS_DEBUG)
 		DEBUG_BREAK;
 }
-Debug::ValidationMessengerGuard::ValidationMessengerGuard (VK::Instance& instance, const VkAllocationCallbacks* allocator) :
-	instance (instance.GetInstance ()), allocator (allocator){
+
+void Debug::ValidationMessengerGuard::Create (VK::Instance & instance, VkAllocationCallbacks * allocator){
+	this->instance = instance.GetInstance ();
+	this->allocator = allocator;
 	if(IS_DEBUG)
 		InitVKValidation (this->instance, debugMessenger, this->allocator);
 }
-Debug::ValidationMessengerGuard::~ValidationMessengerGuard (){
+void Debug::ValidationMessengerGuard::Destroy (){
 	if(IS_DEBUG)
 		DestroyDebugUtilsMessengerEXT (instance, debugMessenger, allocator);
 }

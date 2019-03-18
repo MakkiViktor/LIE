@@ -3,9 +3,8 @@
 
 #pragma once
 
-#include "vulkan/vulkan.h"
-#include <vector>
 #include "LogicalDevice.h"
+#include "CopyInfo.h"
 
 namespace VK{
 
@@ -14,17 +13,18 @@ class SwapChain;
 class ImageViews{
 private:
 	std::vector<VkImageView> swapChainImageViews;
-	const VkExtent2D extent;
-	const LogicalDevice& device;
-	const VkAllocationCallbacks* allocator;
+	VkExtent2D extent;
+	VkDevice device;
+	VkAllocationCallbacks* allocator;
+
+	virtual void FillCreateInfo (VkImageViewCreateInfo & createInfo, const VkImage& image, const SwapChain& swapchain);
 public:
-	ImageViews (const SwapChain& swapChain, const VkAllocationCallbacks* allocator = nullptr);
-	~ImageViews ();
+	void Create (const SwapChain& swapChain, VkAllocationCallbacks* allocator = nullptr);
+	void Destroy ();
+
 	const std::vector<VkImageView>& GetImageViews () const;
 	const VkExtent2D& GetExtent () const;
-	const LogicalDevice& GetLogicalDevice () const;
-protected:
-	virtual void FillCreateInfo (VkImageViewCreateInfo & createInfo, const VkImage& image, const SwapChain& swapchain);
+	VkDevice GetLogicalDevice () const;
 };
 }
 

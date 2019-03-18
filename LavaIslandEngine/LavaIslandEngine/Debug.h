@@ -35,10 +35,10 @@ public:
 	class ValidationMessengerGuard{
 		VkInstance instance;
 		VkDebugUtilsMessengerEXT debugMessenger;
-		const VkAllocationCallbacks* allocator;
+		VkAllocationCallbacks* allocator;
 	public:
-		ValidationMessengerGuard (VK::Instance& instance, const VkAllocationCallbacks* allocator = nullptr);
-		~ValidationMessengerGuard ();
+		void Create (VK::Instance& instance, VkAllocationCallbacks* allocator = nullptr);
+		void Destroy ();
 	};
 
 	static void InitFileName ();

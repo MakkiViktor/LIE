@@ -5,6 +5,7 @@
 
 #include "vulkan/vulkan.h"
 #include <vector>
+#include "Types.h"
 
 namespace VK{
 
@@ -16,14 +17,15 @@ class Pipeline;
 class CommandBuffers{
 private:
 	std::vector<VkCommandBuffer> commandBuffers;
-public:
-	CommandBuffers (const CommandPool& commandPool, const Pipeline & pipeline,
-					const FrameBuffers& frameBuffers);
-protected:
-	virtual void FillCommands (const Pipeline& pipeline, const VkCommandBuffer& commandBuffer);
+
+	virtual void FillCommands (const std::vector<Pipeline>& pipelines, const VkCommandBuffer& commandBuffer);
 	virtual void FillAllocateInfo (VkCommandBufferAllocateInfo& allocInfo);
 	virtual void FillBeginInfo (VkCommandBufferBeginInfo & beginInfo);
 	virtual void FillRenderPassInfo (VkRenderPassBeginInfo& renderPassInfo, VkClearValue& clearColor, const VkExtent2D& extent);
+public:
+	void Create (const CommandPool& commandPool, const std::vector<Pipeline>& pipelines,
+				 const FrameBuffers& frameBuffers);
+	const VkCommandBuffer& operator [](U16 index) const;
 };
 
 }

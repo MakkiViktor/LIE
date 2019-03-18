@@ -22,20 +22,19 @@ class Shader{
 private:
 	VkShaderModule shaderModule = VK_NULL_HANDLE;
 	VkShaderStageFlagBits stage;
-	const LogicalDevice& device;
+	VkDevice device;
 	const VkAllocationCallbacks* allocator;
 
 	static std::vector<char> LoadFile (const std::string& fileName);
+
+	virtual void FillCreateInfo (VkShaderModuleCreateInfo& createInfo, std::vector<char>& code);
 public:
-	Shader (const ShaderDetails& details, const LogicalDevice& device, const VkAllocationCallbacks* allocator = nullptr);
+	Shader (const ShaderDetails& details, const VkDevice& device, const VkAllocationCallbacks* allocator = nullptr);
 	Shader (Shader&& other);
 	Shader (Shader&) = delete;
 	~Shader ();
 	VkShaderStageFlagBits GetStage () const;
 	const VkShaderModule& GetModule () const;
-protected:
-	virtual void FillCreateInfo (VkShaderModuleCreateInfo& createInfo, std::vector<char>& code);
-
 };
 
 }

@@ -13,17 +13,15 @@ class Extension;
 
 class Instance{
 private:
-	VkInstance instance;
-	const VkAllocationCallbacks* allocator;
-public:
-	Instance ();
-	Instance (const Instance&) = delete;
-	Instance (const Extension& extensions, const VkAllocationCallbacks* allocator = nullptr);
-	~Instance ();
-	VkInstance& GetInstance ();
-protected:
+	VkInstance instance = VK_NULL_HANDLE;
+	VkAllocationCallbacks* allocator;
+
 	virtual void FillAppInfo (VkApplicationInfo& appInfo);
 	virtual void FillCreateInfo (VkInstanceCreateInfo& createInfo, const VkApplicationInfo& appInfo, const Extension& extensions);
+public:
+	void Create (const Extension& extensions, VkAllocationCallbacks* allocator = nullptr);
+	void Destroy ();
+	const VkInstance& GetInstance () const;
 };
 
 }

@@ -4,36 +4,39 @@
 
 namespace VK{
 
-FrameBuffers::FrameBuffers (const ImageViews& imageViews, const RenderPass& renderPass, const VkAllocationCallbacks* allocator):
-device(imageViews.GetLogicalDevice()),
-swapChainImageViews (imageViews.GetImageViews ()),
-renderPass(renderPass),
-extent(imageViews.GetExtent ()),
-allocator(allocator){
+void FrameBuffers::Create (const ImageViews& imageViews, const RenderPass& renderPass, VkAllocationCallbacks* allocator){
+	device = imageViews.GetLogicalDevice ();
+	extent = imageViews.GetExtent ();
+	this->renderPass = renderPass;
+	std::vector<VkImageView> swapChainImageViews = imageViews.GetImageViews ();
+
 	frameBuffers.resize (swapChainImageViews.size ());
 	std::vector<VkImageView> attachments;
-	
+
 	for(U16 i = 0; i < swapChainImageViews.size (); i++){
 		attachments.clear ();
 		VkFramebufferCreateInfo framebufferInfo = {};
-		FillAttachments (attachments, i);
+		FillAttachments (attachments, swapChainImageViews, i);
 		FillCreateInfo (framebufferInfo, attachments, renderPass, extent);
-		if(vkCreateFramebuffer (device.GetLogicalDevice(), &framebufferInfo, allocator, &frameBuffers[i]) != VK_SUCCESS){
+		if(vkCreateFramebuffer (device, &framebufferInfo, allocator, &frameBuffers[i]) != VK_SUCCESS){
 			ERROR ("failed to create framebuffer!");
 		}
 	}
 	PRINT ("Frame buffers created");
 }
 
-FrameBuffers::~FrameBuffers (){
+void FrameBuffers::Destroy (){
 	for(auto framebuffer : frameBuffers){
-		vkDestroyFramebuffer (device.GetLogicalDevice(), framebuffer, allocator);
+		if(framebuffer != VK_NULL_HANDLE){
+			vkDestroyFramebuffer (device, framebuffer, allocator);
+			framebuffer = VK_NULL_HANDLE;
+			PRINT ("Frame buffer destroyed");
+		}
 	}
-	PRINT ("Frame buffers destroyed");
 }
 
 U16 FrameBuffers::Size () const{
-	return frameBuffers.size();
+	return static_cast<U16>(frameBuffers.size());
 }
 
 const RenderPass & FrameBuffers::GetRenderPass () const{
@@ -60,7 +63,7 @@ void FrameBuffers::FillCreateInfo (VkFramebufferCreateInfo & framebufferInfo,
 	framebufferInfo.layers = 1;
 }
 
-void FrameBuffers::FillAttachments (std::vector<VkImageView>& attachments, U16 index){
+void FrameBuffers::FillAttachments (std::vector<VkImageView>& attachments, const std::vector<VkImageView> swapChainImageViews, U16 index){
 	attachments.push_back (swapChainImageViews[index]);
 }
 

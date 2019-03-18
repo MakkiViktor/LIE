@@ -5,21 +5,31 @@
 
 namespace VK{
 
-Pipeline::Pipeline (const std::vector<ShaderDetails>& shaderDetails, const SwapChain& swapChain, const RenderPass& renderPass, const VkAllocationCallbacks* allocator):
- device(swapChain.GetLogicalDevice()), allocator(allocator){
+const VkPipeline& Pipeline::GetPipeline () const{
+	return graphicsPipeline;
+}
+
+void Pipeline::Create (const std::vector<ShaderDetails>& shaderDetails,
+					   const SwapChain& swapChain,
+					   const RenderPass& renderPass,
+					   VkAllocationCallbacks* allocator){
+	allocator = allocator;
+	device = swapChain.GetLogicalDevice ();
 
 	std::vector<Shader> shaders;
 	std::vector<VkPipelineShaderStageCreateInfo> shaderCreateInfos;
-	
+
 	for(const ShaderDetails& shaderDetail : shaderDetails){
 		shaders.push_back (Shader (shaderDetail, device, allocator));
 		VkPipelineShaderStageCreateInfo fragShaderStageInfo = {};
-		FillShaderStageCreateInfo (fragShaderStageInfo, shaders.back());
+		FillShaderStageCreateInfo (fragShaderStageInfo, shaders.back ());
 		shaderCreateInfos.push_back (fragShaderStageInfo);
 	}
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
-	VkPipelineInputAssemblyStateCreateInfo inputAssembly = {}; 
+	VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
+	VkRect2D scissor = {};
+	VkViewport viewport = {};
 	VkPipelineViewportStateCreateInfo viewportState = {};
 	VkPipelineMultisampleStateCreateInfo multisampling = {};
 	VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
@@ -30,7 +40,7 @@ Pipeline::Pipeline (const std::vector<ShaderDetails>& shaderDetails, const SwapC
 
 	FillVertexInputCreateInfo (vertexInputInfo);
 	FillInputAssemblyCreateInfo (inputAssembly);
-	FillViewPortStateCreateInfo (viewportState, swapChain.GetExtent  ());
+	FillViewPortStateCreateInfo (viewportState, swapChain.GetExtent (), viewport, scissor);
 	FillMultisampleCreateInfo (multisampling);
 	FillColorBlendAttachmentState (colorBlendAttachment);
 	FillDynamicStateCreateInfo (dynamicState);
@@ -38,14 +48,14 @@ Pipeline::Pipeline (const std::vector<ShaderDetails>& shaderDetails, const SwapC
 	FillRasterizerCreateInfo (rasterizer);
 	FillPipelineLayoutCreateInfo (pipelineLayoutInfo);
 
-	if(vkCreatePipelineLayout (device.GetLogicalDevice(), &pipelineLayoutInfo, allocator, &pipelineLayout) != VK_SUCCESS){
+	if(vkCreatePipelineLayout (device, &pipelineLayoutInfo, allocator, &pipelineLayout) != VK_SUCCESS){
 		ERROR ("failed to create pipeline layout!");
 	}
 
-	VkGraphicsPipelineCreateInfo pipelineInfo = {}	;
+	VkGraphicsPipelineCreateInfo pipelineInfo = {};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineInfo.stageCount = static_cast<U32> (shaderCreateInfos.size ());
-	pipelineInfo.pStages = shaderCreateInfos.data();
+	pipelineInfo.pStages = shaderCreateInfos.data ();
 	pipelineInfo.pVertexInputState = &vertexInputInfo;
 	pipelineInfo.pInputAssemblyState = &inputAssembly;
 	pipelineInfo.pViewportState = &viewportState;
@@ -55,26 +65,28 @@ Pipeline::Pipeline (const std::vector<ShaderDetails>& shaderDetails, const SwapC
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = nullptr; // Optional
 	pipelineInfo.layout = pipelineLayout;
-	pipelineInfo.renderPass = renderPass.GetRenderPass();
+	pipelineInfo.renderPass = renderPass.GetRenderPass ();
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipelineInfo.basePipelineIndex = -1;
 
-	if(vkCreateGraphicsPipelines (device.GetLogicalDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, allocator, &graphicsPipeline) != VK_SUCCESS){
-		ERROR("failed to create graphics pipeline!");
+	if(vkCreateGraphicsPipelines (device, VK_NULL_HANDLE, 1, &pipelineInfo, allocator, &graphicsPipeline) != VK_SUCCESS){
+		ERROR ("failed to create graphics pipeline!");
 	}
 
 	PRINT ("Pipeline Created");
 }
 
-const VkPipeline& Pipeline::GetPipeline () const{
-	return graphicsPipeline;
-}
-
-Pipeline::~Pipeline (){
-	vkDestroyPipelineLayout (device.GetLogicalDevice(), pipelineLayout, allocator);
-	vkDestroyPipeline (device.GetLogicalDevice(),graphicsPipeline, allocator);
-	PRINT ("Pipeline destroyed");
+void Pipeline::Destroy (){
+	if(pipelineLayout != VK_NULL_HANDLE &&
+	   graphicsPipeline != VK_NULL_HANDLE
+	   ){
+		vkDestroyPipelineLayout (device, pipelineLayout, allocator);
+		vkDestroyPipeline (device, graphicsPipeline, allocator);
+		pipelineLayout = VK_NULL_HANDLE;
+		graphicsPipeline = VK_NULL_HANDLE;
+		PRINT ("Pipeline destroyed");
+	}
 }
 
 std::vector<VkShaderStageFlagBits> Pipeline::GetShaderStagesFromShaders (const std::vector<Shader>& shaders){
@@ -88,9 +100,7 @@ std::vector<VkShaderStageFlagBits> Pipeline::GetShaderStagesFromShaders (const s
 void Pipeline::FillVertexInputCreateInfo (VkPipelineVertexInputStateCreateInfo & vertexInputInfo){
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertexInputInfo.vertexBindingDescriptionCount = 0;
-	vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
 	vertexInputInfo.vertexAttributeDescriptionCount = 0;
-	vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
 }
 
 void Pipeline::FillInputAssemblyCreateInfo (VkPipelineInputAssemblyStateCreateInfo& inputAssembly){
@@ -99,9 +109,8 @@ void Pipeline::FillInputAssemblyCreateInfo (VkPipelineInputAssemblyStateCreateIn
 	inputAssembly.primitiveRestartEnable = VK_FALSE;
 }
 
-void Pipeline::FillViewPortStateCreateInfo (VkPipelineViewportStateCreateInfo & viewportState, const VkExtent2D& extent){
+void Pipeline::FillViewPortStateCreateInfo (VkPipelineViewportStateCreateInfo & viewportState, const VkExtent2D& extent, VkViewport& viewport, VkRect2D& scissor){
 	//If you want multiple viewport enable extension
-	VkViewport viewport = {};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
 	viewport.width = (float)extent.width;
@@ -109,7 +118,6 @@ void Pipeline::FillViewPortStateCreateInfo (VkPipelineViewportStateCreateInfo & 
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
-	VkRect2D scissor = {};
 	scissor.offset = {0, 0};
 	scissor.extent = extent;
 

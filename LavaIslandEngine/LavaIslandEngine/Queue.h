@@ -12,10 +12,11 @@ struct QueueFamilyIndex;
 
 class Queue{
 private:
-	VkQueue queue;
+	VkQueue queue = VK_NULL_HANDLE;
 public:
-	Queue (const LogicalDevice& logicalDevice, const QueueFamilyIndex& queueFamilyIndex);
-	~Queue ();
+	void Create (const LogicalDevice& logicalDevice, const QueueFamilyIndex& queueFamilyIndex);
+
+	const VkQueue& GetQueue () const;
 };
 
 }

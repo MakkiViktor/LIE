@@ -4,6 +4,7 @@
 #pragma once
 
 #include "PhysicalDevice.h"
+#include "CopyInfo.h"
 
 namespace VK{
 
@@ -14,17 +15,16 @@ class Surface;
 class LogicalDevice{
 private:
 	VkDevice logicalDevice = VK_NULL_HANDLE;
-	const PhysicalDevice& physicalDevice;
-	const VkAllocationCallbacks* allocator;
-public:
-	LogicalDevice (const PhysicalDevice& physicalDevice, const VkAllocationCallbacks* allocator = nullptr);
-	~LogicalDevice ();
-	const VkDevice& GetLogicalDevice () const;
-	const PhysicalDevice& GetPhysicalDevice () const;
-protected:
+	PhysicalDevice physicalDevice;
+	VkAllocationCallbacks* allocator;
+
 	virtual void FillQueueCreateInfo (const QueueFamilyIndex& queueFamilyIndex,VkDeviceQueueCreateInfo& queueCreateInfo);
 	virtual void FillDeviceCreateInfo (const std::vector<VkDeviceQueueCreateInfo>& queueCreateInfos,VkDeviceCreateInfo& createInfo);
-
+public:
+	void Create (const PhysicalDevice& physicalDevice, VkAllocationCallbacks* allocator = nullptr);
+	void Destroy ();
+	const VkDevice& GetLogicalDevice () const;
+	const PhysicalDevice& GetPhysicalDevice () const;
 };
 
 }

@@ -2,31 +2,33 @@
 
 
 namespace VK{
-
-LogicalDevice::LogicalDevice (const PhysicalDevice& physicalDevice, const VkAllocationCallbacks* allocator):
-physicalDevice(physicalDevice), allocator(allocator){
+void LogicalDevice::Create (const PhysicalDevice& physicalDevice, VkAllocationCallbacks* allocator){
+	this->physicalDevice = physicalDevice;
+	this->allocator = allocator;
 	std::vector<QueueFamilyIndex> indices = physicalDevice.GetQueueFamilyIndices ();
-	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos(indices.size());
+	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos (indices.size ());
 	U16 iterator = 0;
-	for(const auto& queueFamily : physicalDevice.GetQueueFamilyIndices() ){
+	for(const auto& queueFamily : physicalDevice.GetQueueFamilyIndices ()){
 		FillQueueCreateInfo (queueFamily, queueCreateInfos[iterator++]);
 	}
 	VkDeviceCreateInfo createInfo = {};
 	FillDeviceCreateInfo (queueCreateInfos, createInfo);
 
-	if(vkCreateDevice (physicalDevice.GetPhysicalDevice(), &createInfo, allocator, &logicalDevice) != VK_SUCCESS){
-		ERROR("failed to create logical device!");
+	if(vkCreateDevice (physicalDevice.GetPhysicalDevice (), &createInfo, allocator, &logicalDevice) != VK_SUCCESS){
+		ERROR ("failed to create logical device!");
 	}
 
 	if(logicalDevice == VK_NULL_HANDLE)
 		ERROR ("Failed to create logica device");
 	LIE::Debug::Print ("Logical device created");
-
 }
 
-LogicalDevice::~LogicalDevice (){
-	vkDestroyDevice (logicalDevice, allocator);
-	LIE::Debug::Print ("Logical device destroyed");
+void LogicalDevice::Destroy (){
+	if(logicalDevice != VK_NULL_HANDLE){
+		vkDestroyDevice (logicalDevice, allocator);
+		logicalDevice = VK_NULL_HANDLE;
+		PRINT ("Logical device destroyed");
+	}
 }
 
 const VkDevice& LogicalDevice::GetLogicalDevice () const{

@@ -1,15 +1,12 @@
 #include "Instance.h"
 #include <stdexcept>
 #include "Extension.h"
-#include "Debug.h"
+#include "Types.h"
 
 namespace VK{
-Instance::Instance (): Instance(Extension::CreateDefaultExtensions(), nullptr){
-}
 
-Instance::Instance (const Extension& extensions,
-					const VkAllocationCallbacks* allocator) :
-	allocator (allocator){
+void Instance::Create (const Extension & extensions, VkAllocationCallbacks* allocator){
+	allocator = allocator;
 
 	VkApplicationInfo appInfo = {};
 	FillAppInfo (appInfo);
@@ -18,17 +15,20 @@ Instance::Instance (const Extension& extensions,
 	FillCreateInfo (createInfo, appInfo, extensions);
 
 	if(vkCreateInstance (&createInfo, allocator, &instance) != VK_SUCCESS){
-		LIE::Debug::Error ("failed to create instance!");
+		ERROR ("failed to create instance!");
 	}
-	LIE::Debug::Print ("Vulkan Instance created");
+	PRINT ("Vulkan Instance created");
 }
 
-Instance::~Instance (){
-	vkDestroyInstance (instance, allocator);
-	LIE::Debug::Print ("Vulkan Instance destroyed");
+void Instance::Destroy (){
+	if(instance != VK_NULL_HANDLE){
+		vkDestroyInstance (instance, allocator);
+		PRINT ("Vulkan Instance destroyed");
+		instance = VK_NULL_HANDLE;
+	}
 }
 
-VkInstance & Instance::GetInstance (){
+const VkInstance & Instance::GetInstance () const{
 	return instance;
 }
 

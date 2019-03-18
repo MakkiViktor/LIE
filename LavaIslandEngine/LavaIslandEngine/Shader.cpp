@@ -5,12 +5,12 @@
 
 namespace VK{
 //Shader
-Shader::Shader (const ShaderDetails& details, const LogicalDevice& device, const VkAllocationCallbacks* allocator):
+Shader::Shader (const ShaderDetails& details, const VkDevice& device, const VkAllocationCallbacks* allocator):
 device(device), stage(details.stage), allocator(allocator){
 	std::vector<char> code = LoadFile (details.fileName);
 	VkShaderModuleCreateInfo createInfo = {};
 	FillCreateInfo (createInfo, code);
-	if(vkCreateShaderModule (device.GetLogicalDevice(), &createInfo, allocator, &shaderModule) != VK_SUCCESS){
+	if(vkCreateShaderModule (device, &createInfo, allocator, &shaderModule) != VK_SUCCESS){
 		ERROR ("failed to create shader module!");
 	}
 	PRINT ("Shader module created : " + details.fileName);
@@ -25,7 +25,7 @@ stage(other.stage), allocator(other.allocator)
 
 Shader::~Shader (){
 	if(shaderModule != VK_NULL_HANDLE){
-		vkDestroyShaderModule (device.GetLogicalDevice (), shaderModule, allocator);
+		vkDestroyShaderModule (device, shaderModule, allocator);
 		PRINT ("Shader module destroyed");
 	}
 }

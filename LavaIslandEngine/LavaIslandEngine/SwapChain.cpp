@@ -7,9 +7,6 @@
 namespace VK{
 
 //SwapChainDetails
-SwapChainDetails::SwapChainDetails (const Surface& surface, const LogicalDevice& logicalDevice) :
-	SwapChainDetails (surface, logicalDevice.GetPhysicalDevice ().GetPhysicalDevice()){}
-
 SwapChainDetails::SwapChainDetails (const Surface & surface, const VkPhysicalDevice & physicalDevice){
 	FillCapabilities (surface, physicalDevice);
 	FillFormats (surface, physicalDevice);
@@ -141,19 +138,15 @@ void SwapChainDetails::SelectImageCount (){
 
 //SwapChain
 
-SwapChain::SwapChain (const Surface & surface,
-					  const LogicalDevice& logicalDevice,
-					  const VkAllocationCallbacks* allocator) :
-	allocator (allocator),
-	logicalDevice (logicalDevice)
-
-{
+void SwapChain::Create (const LogicalDevice& logicalDevice, const Surface& surface, VkAllocationCallbacks* allocator){
+	device = logicalDevice.GetLogicalDevice ();
+	this->allocator = allocator;
 	VkSwapchainCreateInfoKHR createInfo = {};
 	FillCreateInfo (surface, logicalDevice.GetPhysicalDevice (), createInfo);
-	format =  createInfo.imageFormat;
+	format = createInfo.imageFormat;
 	extent = createInfo.imageExtent;
 	imageCount = createInfo.minImageCount;
-	if(vkCreateSwapchainKHR (logicalDevice.GetLogicalDevice(), &createInfo, allocator, &swapChain) != VK_SUCCESS){
+	if(vkCreateSwapchainKHR (logicalDevice.GetLogicalDevice (), &createInfo, allocator, &swapChain) != VK_SUCCESS){
 		ERROR ("failed to create swap chain!");
 	}
 	LIE::Debug::Print ("Swap chain created");
@@ -161,9 +154,12 @@ SwapChain::SwapChain (const Surface & surface,
 	FillSwapChainImages ();
 }
 
-SwapChain::~SwapChain (){
-	vkDestroySwapchainKHR (logicalDevice.GetLogicalDevice(), swapChain, allocator);
-	LIE::Debug::Print ("Swap chain destroyed");
+void SwapChain::Destroy (){
+	if(swapChain != VK_NULL_HANDLE){
+		vkDestroySwapchainKHR (device, swapChain, allocator);
+		swapChain = VK_NULL_HANDLE;
+		PRINT ("Swap chain destroyed");
+	}
 }
 
 U16 SwapChain::GetImageCount () const{
@@ -182,8 +178,8 @@ const VkFormat & SwapChain::GetFormat () const{
 	return format;
 }
 
-const LogicalDevice & SwapChain::GetLogicalDevice () const{
-	return logicalDevice;
+VkDevice SwapChain::GetLogicalDevice () const{
+	return device;
 }
 
 const VkExtent2D & SwapChain::GetExtent () const{
@@ -193,7 +189,7 @@ const VkExtent2D & SwapChain::GetExtent () const{
 void SwapChain::FillCreateInfo (const Surface& surface, 
 								const PhysicalDevice& physicalDevice, 
 								VkSwapchainCreateInfoKHR & createInfo){
-	SwapChainDetails details (surface, logicalDevice);
+	SwapChainDetails details (surface, physicalDevice.GetPhysicalDevice());
 	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	createInfo.surface = surface.GetSurface ();
 	createInfo.minImageCount = details.GetImageCount ();
@@ -219,14 +215,13 @@ void SwapChain::FillCreateInfo (const Surface& surface,
 	else{
 		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		createInfo.queueFamilyIndexCount = 0; // Optional
-		createInfo.pQueueFamilyIndices = nullptr; // Optional
 	}
 }
 
 void SwapChain::FillSwapChainImages (){
-	vkGetSwapchainImagesKHR (logicalDevice.GetLogicalDevice (), swapChain, &imageCount, nullptr);
+	vkGetSwapchainImagesKHR (device, swapChain, &imageCount, nullptr);
 	swapChainImages.resize (imageCount);
-	vkGetSwapchainImagesKHR (logicalDevice.GetLogicalDevice (), swapChain, &imageCount, swapChainImages.data ());
+	vkGetSwapchainImagesKHR (device, swapChain, &imageCount, swapChainImages.data ());
 }
 
 }

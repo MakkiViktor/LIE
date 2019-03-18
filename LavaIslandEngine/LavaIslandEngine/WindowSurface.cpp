@@ -7,20 +7,12 @@
 
 
 namespace VK{
-
-//TODO dont copy the instance, glfw
-WindowSurface::WindowSurface (Instance& instance, Window& window): instance(instance){
-	if(glfwCreateWindowSurface (instance.GetInstance(), window.GetWindow(), nullptr, &surface) != VK_SUCCESS){
-		ERROR("failed to create window surface!");
+void WindowSurface::Create (const Instance& instance, Window& window, VkAllocationCallbacks* allocator){
+	this->allocator = allocator;
+	this->instance = instance.GetInstance ();
+	if(glfwCreateWindowSurface (this->instance, window.GetWindow (), allocator, &surface) != VK_SUCCESS){
+		ERROR ("failed to create window surface!");
 	}
-}
-
-WindowSurface::~WindowSurface (){
-	vkDestroySurfaceKHR (instance.GetInstance(), surface, nullptr);
-}
-
-const VkSurfaceKHR & WindowSurface::GetSurface () const{
-	return surface;
 }
 
 }

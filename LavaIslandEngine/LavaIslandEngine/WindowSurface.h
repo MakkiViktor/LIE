@@ -12,14 +12,9 @@ class Window;
 class Instance;
 
 class WindowSurface : public Surface{
-private:
-	VkSurfaceKHR surface;
-	Instance& instance;
 public:
-	WindowSurface (Instance& instance, Window& window);
-	~WindowSurface ();
+	void Create (const Instance& instance, Window& window, VkAllocationCallbacks* allocator = nullptr);
 
-	virtual const VkSurfaceKHR & GetSurface () const override final;
 };
 
 }

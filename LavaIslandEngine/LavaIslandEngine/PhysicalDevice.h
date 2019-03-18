@@ -63,7 +63,7 @@ private:
 	VkPhysicalDeviceFeatures enabledFeatures = {};
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 
-	static std::vector<VkPhysicalDevice> GetPhysicalDevices (Instance& instance);
+	static std::vector<VkPhysicalDevice> GetPhysicalDevices (const Instance& instance);
 	static bool IsDeviceSuitable(const VkPhysicalDevice& device, const Surface& surface, const PhysicalDeviceDetails& details);
 
 	void AddQueueFamilyIndex (const QueueFamilyInfo& info);
@@ -77,8 +77,8 @@ private:
 	static bool HasPresentSupport (const VkPhysicalDevice& device, const Surface& surface, U32 queueIndex);
 	static bool HasExtensionSupport (const VkPhysicalDevice& device, const std::vector<const char*>& deviceExtensions);
 public:
-	PhysicalDevice (Instance& instance, const Surface& surface, const PhysicalDeviceDetails& details);
-	~PhysicalDevice ();
+	PhysicalDevice ();
+	void Create (const Instance& instance, const Surface& surface, const PhysicalDeviceDetails& details);
 	
 	VkPhysicalDevice GetPhysicalDevice () const;
 	QueueFamilyIndex GetQueueFamilyIndexByFlag (VkQueueFlagBits queueFlag) const;
@@ -90,7 +90,6 @@ public:
 	static VkPhysicalDeviceFeatures GetDeviceFeatures (const VkPhysicalDevice& device);
 	static VkPhysicalDeviceProperties GetDeviceProperties (const VkPhysicalDevice& device);
 
-	
 };
 
 }

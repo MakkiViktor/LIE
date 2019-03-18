@@ -40,18 +40,16 @@ const std::vector<const char*>& PhysicalDeviceDetails::GetDeviceExtensions () co
 
 //PhysicalDevice
 
-PhysicalDevice::PhysicalDevice (Instance& instance,
-								const Surface& surface,
-								const PhysicalDeviceDetails& details){
-	std::vector<VkPhysicalDevice> devices(GetPhysicalDevices(instance));
-	SelectDevice(devices, surface, details);
+PhysicalDevice::PhysicalDevice (){}
+
+void PhysicalDevice::Create (const Instance & instance, const Surface & surface, const PhysicalDeviceDetails & details){
+	std::vector<VkPhysicalDevice> devices (GetPhysicalDevices (instance));
+	SelectDevice (devices, surface, details);
 	SetupDetails (details);
 	if(physicalDevice == VK_NULL_HANDLE)
 		ERROR ("No physical device selected");
-	LIE::Debug::Print ("Physical device selected");
+	PRINT ("Physical device selected");
 }
-
-PhysicalDevice::~PhysicalDevice (){}
 
 void PhysicalDevice::AddQueueFamilyIndex (const QueueFamilyInfo& info){
 	QueueFamilyIndex queueFamilyIndex = QueueFamilyIndex::CreateQueueFamilyIndex (physicalDevice,info);
@@ -59,7 +57,7 @@ void PhysicalDevice::AddQueueFamilyIndex (const QueueFamilyInfo& info){
 		WARNING ("Queue index already added");
 		return;
 	}
-	LIE::Debug::Print ("QueueFamily Added");
+	PRINT ("QueueFamily Added");
 	queueFamilyIndices.push_back (queueFamilyIndex);
 }
 
@@ -88,6 +86,7 @@ QueueFamilyIndex PhysicalDevice::GetQueueFamilyIndexByFlag (VkQueueFlagBits queu
 	ERROR ("QueueFamily not addded to this physical device");
 	return queueFamilyIndices[0];
 }
+
 
 VkPhysicalDevice PhysicalDevice::GetPhysicalDevice () const {
 	return physicalDevice;
@@ -153,7 +152,7 @@ bool PhysicalDevice::HasExtensionSupport (const VkPhysicalDevice & device, const
 	return requiredExtensions.empty ();
 }
 
-std::vector<VkPhysicalDevice> PhysicalDevice::GetPhysicalDevices (Instance& instance){
+std::vector<VkPhysicalDevice> PhysicalDevice::GetPhysicalDevices (const Instance& instance){
 	U32 deviceCount = 0;
 	vkEnumeratePhysicalDevices (instance.GetInstance (), &deviceCount, nullptr);
 	if(deviceCount == 0){
