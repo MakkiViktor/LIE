@@ -6,6 +6,8 @@
 #include "LogicalDevice.h"
 
 namespace VK{
+
+class CommandBuffers;
 	
 class CommandPool{
 private:
@@ -16,6 +18,7 @@ private:
 public:
 	void Create (const LogicalDevice& device, VkAllocationCallbacks* allocator = nullptr);
 	void Destroy ();
+	void Free (const CommandBuffers& commandBuffers);
 	const VkCommandPool& GetCommandPool () const;
 	VkDevice GetLogicalDevice () const;
 

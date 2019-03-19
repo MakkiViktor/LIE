@@ -5,6 +5,7 @@
 
 #include <GLFW/glfw3.h>
 #include "Types.h"
+#include <functional>
 
 namespace VK {
 
@@ -12,10 +13,15 @@ class Window
 {
 private:
 	GLFWwindow* window;
-public:
-	void Create (U16 width, U16 height);
-	void Destroy ();
+	I32 width = 0, height = 0;
+	std::function<void (GLFWwindow* window, int width, int height)> resizeCallback;
 
+	static void framebufferResizeCallback (GLFWwindow* window, int width, int height);
+public:
+	void Create (U32 width, U32 height);
+	void Destroy ();
+	void Refresh ();
+	void SetResizeCallback (std::function<void (GLFWwindow* window, int width, int height)> callback);
 	bool IsClosed() const;
 	GLFWwindow* GetWindow ();
 };

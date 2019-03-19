@@ -25,7 +25,10 @@ private:
 public:
 	void Create (const CommandPool& commandPool, const std::vector<Pipeline>& pipelines,
 				 const FrameBuffers& frameBuffers);
+
 	const VkCommandBuffer& operator [](U16 index) const;
+	SIZE Size () const;
+	const VkCommandBuffer* Data () const;
 };
 
 }

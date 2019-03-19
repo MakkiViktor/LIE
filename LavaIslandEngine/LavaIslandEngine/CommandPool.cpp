@@ -1,4 +1,5 @@
 #include "CommandPool.h"
+#include "CommandBuffers.h"
 
 namespace VK{
 
@@ -21,6 +22,14 @@ void CommandPool::Destroy (){
 		commandPool = VK_NULL_HANDLE;
 	}
 }
+
+void CommandPool::Free (const CommandBuffers & commandBuffers){
+	vkFreeCommandBuffers (device,
+						  commandPool,
+						  static_cast<uint32_t>(commandBuffers.Size()),
+						  commandBuffers.Data ());
+}
+
 
 const VkCommandPool & CommandPool::GetCommandPool () const{
 	return commandPool;

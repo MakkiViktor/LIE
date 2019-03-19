@@ -17,11 +17,13 @@
 namespace VK{
 
 class Queue;
+class Window;
 
 class BasicRenderCore{
 private:
 	U16 maxFramesInFlight = 2;
 	U16 currentFrame = 0;
+	bool framebufferResized = false;
 
 	LogicalDevice logicalDevice;
 	Surface surface;
@@ -45,13 +47,14 @@ private:
 	virtual CommandPool CreateCommandPool (const LogicalDevice& logicalDevice);
 	virtual CommandBuffers CreateCommandBuffers (const CommandPool& commandPool, const std::vector<Pipeline>& pipelines, const FrameBuffers& frameBuffers);
 
+	void Recreate (Window& window);
 public:
 	void Create (const LogicalDevice& logicalDevice, const Surface& surface);
 	void Destroy ();
+	
+	void Resize ();
+	virtual void Draw (const Queue& queue, Window& window);
 
-	void Recreate ();
-
-	virtual void Draw (const Queue& queue);
 };
 }
 

@@ -1,6 +1,8 @@
 #include "BasicRenderCore.h"
 
 #include "Queue.h"
+#include "Window.h"
+#include "SharedResources.h"
 
 namespace VK{
 
@@ -36,33 +38,63 @@ void BasicRenderCore::Destroy (){
 	for(Fence& fence: inFlightFences)
 		fence.Destroy ();
 	commandPool.Destroy ();
+	frameBuffers.Destroy ();
 	for(Pipeline& pipeline : pipelines)
 		pipeline.Destroy ();
-	frameBuffers.Destroy ();
 	renderPass.Destroy ();
 	imageviews.Destroy ();
 	swapChain.Destroy ();
 }
 
-void BasicRenderCore::Recreate (){
-	
+void BasicRenderCore::Recreate (Window& window){
+	window.Refresh();
+	sharedWindow = window;
+	frameBuffers.Destroy ();
+	commandPool.Free (commandBuffers);
+	for(Pipeline& pipeline : pipelines)
+		pipeline.Destroy ();
+	pipelines.clear ();
+	renderPass.Destroy ();
+	imageviews.Destroy ();
+	swapChain.Destroy ();
+
+	vkDeviceWaitIdle (logicalDevice.GetLogicalDevice ());
+
+	swapChain = CreateSwapChain (logicalDevice, surface);
+	imageviews = CreateImageView (swapChain);
+	renderPass = CreateRenderPass (swapChain);
+	CreatePipelines (pipelines, swapChain, renderPass);
+	frameBuffers = CreateFrameBuffers (imageviews, renderPass);
+	commandBuffers = CreateCommandBuffers (commandPool, pipelines, frameBuffers);
+
 }
 
-void BasicRenderCore::Draw (const Queue& queue){
+void BasicRenderCore::Resize (){
+	framebufferResized = true;
+}
+
+void BasicRenderCore::Draw (const Queue& queue, Window& window){
 	U32 imageIndex;
 	vkWaitForFences (logicalDevice.GetLogicalDevice(),
 					 1, &inFlightFences[currentFrame].GetFence(),
 					 VK_TRUE, std::numeric_limits<uint64_t>::max ());
 
-	vkResetFences (logicalDevice.GetLogicalDevice (),
-				   1, &inFlightFences[currentFrame].GetFence());
+	
 
-	vkAcquireNextImageKHR (logicalDevice.GetLogicalDevice (),
+	VkResult result = vkAcquireNextImageKHR (logicalDevice.GetLogicalDevice (),
 						   swapChain.GetSwapchain(),
 						   std::numeric_limits<uint64_t>::max (),
 						   imageAvailableSemaphores[currentFrame].GetSemaphore (),
 						   VK_NULL_HANDLE,
 						   &imageIndex);
+
+	if(result == VK_ERROR_OUT_OF_DATE_KHR){
+		Recreate (window);
+		return;
+	}
+	else if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR){
+		ERROR ("failed to acquire swap chain image!");
+	}
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -79,21 +111,30 @@ void BasicRenderCore::Draw (const Queue& queue){
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
+	vkResetFences (logicalDevice.GetLogicalDevice (),
+				   1, &inFlightFences[currentFrame].GetFence());
+
 	if(vkQueueSubmit (queue.GetQueue(), 1, &submitInfo, inFlightFences[currentFrame].GetFence()) != VK_SUCCESS){
 		ERROR ("failed to submit draw command buffer!");
 	}
 
+	VkSwapchainKHR swapChains[] = {swapChain.GetSwapchain()};
 	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
 	presentInfo.waitSemaphoreCount = 1;
 	presentInfo.pWaitSemaphores = signalSemaphores;
-
-	VkSwapchainKHR swapChains[] = {swapChain.GetSwapchain()};
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;
 	presentInfo.pImageIndices = &imageIndex;
-	vkQueuePresentKHR (queue.GetQueue(), &presentInfo);
+
+	result = vkQueuePresentKHR (queue.GetQueue(), &presentInfo);
+	if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized){
+		framebufferResized = false;
+		Recreate (window);
+	}
+	else if(result != VK_SUCCESS){
+		throw std::runtime_error ("failed to present swap chain image!");
+	}
 
 	currentFrame = (currentFrame + 1) % maxFramesInFlight;
 }

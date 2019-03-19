@@ -5,6 +5,9 @@ namespace VK{
 Renderer::Renderer (){
 	LIE::Debug::InitFileName ();
 	window = CreateWindow ();
+	window.SetResizeCallback ([&](GLFWwindow*, int, int){
+		for(BasicRenderCore& renderCore : renderCores)
+			renderCore.Resize (); });
 	instance = CreateInstance ();
 	messangeGuard.Create (instance);
 	surface = CreateSurface (instance,window);
@@ -39,7 +42,7 @@ void Renderer::Draw (){
 	glfwPollEvents ();
 	for(BasicRenderCore& renderCore : renderCores){
 		for(const Queue& queue : queues){		
-			renderCore.Draw (queue);
+			renderCore.Draw (queue, window);
 		}
 	}
 

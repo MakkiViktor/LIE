@@ -8,6 +8,8 @@
 
 using U16 = uint16_t;
 using U32 = uint32_t;
+using I32 = int_fast32_t;
+using BYTE = char;
 using SIZE = size_t;
 
 #ifdef _DEBUG

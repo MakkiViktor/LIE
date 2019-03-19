@@ -46,6 +46,14 @@ const VkCommandBuffer& CommandBuffers::operator[](U16 index) const{
 	return commandBuffers[index];
 }
 
+SIZE CommandBuffers::Size () const{
+	return commandBuffers.size();
+}
+
+const VkCommandBuffer * CommandBuffers::Data () const{
+	return commandBuffers.data();
+}
+
 void CommandBuffers::FillCommands (const std::vector<Pipeline>& pipelines, const VkCommandBuffer& commandBuffer){
 	for(const Pipeline& pipeline : pipelines){
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.GetPipeline());
