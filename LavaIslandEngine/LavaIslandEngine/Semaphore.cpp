@@ -6,8 +6,8 @@ void Semaphore::FillCreateInfo (VkSemaphoreCreateInfo& semaphoreInfo){
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 }
 
-void Semaphore::Create (const LogicalDevice & device, VkAllocationCallbacks * allocator){
-	this->device = device.GetLogicalDevice ();
+void Semaphore::Create (const VkDevice & device, VkAllocationCallbacks * allocator){
+	this->device = device;
 	this->allocator = allocator;
 	VkSemaphoreCreateInfo semaphoreInfo = {};
 	if(vkCreateSemaphore (this->device, &semaphoreInfo, allocator, &semaphore) != VK_SUCCESS)

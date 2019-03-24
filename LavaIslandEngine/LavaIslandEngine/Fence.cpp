@@ -2,8 +2,8 @@
 #include "LogicalDevice.h"
 
 namespace VK{
-void Fence::Create (const LogicalDevice & device, VkAllocationCallbacks* allocator ){
-	this->device = device.GetLogicalDevice ();
+void Fence::Create (const VkDevice & device, VkAllocationCallbacks* allocator ){
+	this->device = device;
 	this->allocator = allocator;
 	VkFenceCreateInfo fenceInfo = {};
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -11,10 +11,12 @@ void Fence::Create (const LogicalDevice & device, VkAllocationCallbacks* allocat
 	if(vkCreateFence (this->device, &fenceInfo, allocator, &fence) != VK_SUCCESS){
 		ERROR ("Failed to create Fence");
 	}
+	PRINT ("Fence created");
 }
 
 void Fence::Destroy (){
 	vkDestroyFence (device, fence, allocator);
+	PRINT ("Fence destroyed");
 }
 const VkFence & Fence::GetFence () const{
 	return fence;

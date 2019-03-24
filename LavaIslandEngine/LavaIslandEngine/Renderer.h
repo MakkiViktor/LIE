@@ -18,8 +18,7 @@
 #include "LogicalDevice.h"
 #include "Queue.h"
 #include "BasicRenderCore.h"
-
-#include "Semaphore.h"
+#include "Drawer.h"
 
 namespace VK{
 
@@ -38,10 +37,7 @@ private:
 	LogicalDevice logicalDevice;
 	std::vector<Queue> queues;
 	std::vector<BasicRenderCore> renderCores;
-	
-	std::vector<Semaphore> renderFinishedSemaphores;
-	std::vector<Semaphore> imageAvailableSemaphores;
-
+	Drawer drawer;
 
 	virtual Window CreateWindow ();
 	virtual Instance CreateInstance ();
@@ -50,6 +46,11 @@ private:
 	virtual LogicalDevice CreateLogicalDevice (const PhysicalDevice& physicalDevice);
 	virtual void CreateQueues (std::vector<Queue>& queues, const LogicalDevice& logicalDevice);
 	virtual void CreateRenderCores (std::vector<BasicRenderCore>& renderCores, const LogicalDevice& logicalDevice, const Surface& surface);
+	virtual Drawer CreateDrawer (const LogicalDevice& logicalDevice);
+
+	void RecreateCores ();
+protected:
+	std::vector<DrawDetails> GetDrawDetails ();
 
 public:
 	Renderer ();

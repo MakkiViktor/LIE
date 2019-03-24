@@ -10,6 +10,8 @@ const VkPipeline& Pipeline::GetPipeline () const{
 }
 
 void Pipeline::Create (const std::vector<ShaderDetails>& shaderDetails,
+					   std::vector<VkVertexInputBindingDescription> bindingDescriptions,
+					   std::vector<VkVertexInputAttributeDescription> attributeDescriptions,
 					   const SwapChain& swapChain,
 					   const RenderPass& renderPass,
 					   VkAllocationCallbacks* allocator){
@@ -38,7 +40,12 @@ void Pipeline::Create (const std::vector<ShaderDetails>& shaderDetails,
 	VkPipelineRasterizationStateCreateInfo rasterizer = {};
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 
-	FillVertexInputCreateInfo (vertexInputInfo);
+	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	vertexInputInfo.vertexBindingDescriptionCount = static_cast<U32>(bindingDescriptions.size());
+	vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data ();
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<U32>(attributeDescriptions.size ());
+	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data ();
+
 	FillInputAssemblyCreateInfo (inputAssembly);
 	FillViewPortStateCreateInfo (viewportState, swapChain.GetExtent (), viewport, scissor);
 	FillMultisampleCreateInfo (multisampling);
@@ -95,12 +102,6 @@ std::vector<VkShaderStageFlagBits> Pipeline::GetShaderStagesFromShaders (const s
 		stages.push_back (shader.GetStage ());
 	}
 	return std::vector<VkShaderStageFlagBits> ();
-}
-
-void Pipeline::FillVertexInputCreateInfo (VkPipelineVertexInputStateCreateInfo & vertexInputInfo){
-	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = 0;
-	vertexInputInfo.vertexAttributeDescriptionCount = 0;
 }
 
 void Pipeline::FillInputAssemblyCreateInfo (VkPipelineInputAssemblyStateCreateInfo& inputAssembly){
@@ -210,3 +211,4 @@ void Pipeline::FillPipelineLayoutCreateInfo (VkPipelineLayoutCreateInfo & pipeli
 }
 
 }
+

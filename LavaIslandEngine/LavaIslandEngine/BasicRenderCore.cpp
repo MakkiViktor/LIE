@@ -3,6 +3,9 @@
 #include "Queue.h"
 #include "Window.h"
 #include "SharedResources.h"
+#include "VertexBuffer.h"
+#include "StagingBuffer.h"
+#include "BufferTransferer.h"
 
 namespace VK{
 
@@ -15,28 +18,15 @@ void BasicRenderCore::Create (const LogicalDevice& logicalDevice, const Surface&
 	frameBuffers = CreateFrameBuffers (imageviews, renderPass);
 	CreatePipelines (pipelines, swapChain, renderPass);
 	commandPool = CreateCommandPool (logicalDevice);
-	commandBuffers = CreateCommandBuffers (commandPool, pipelines, frameBuffers);
+	CreateBuffers (logicalDevice, buffers);
+	commandBuffers = CreateCommandBuffers (commandPool, pipelines, frameBuffers, buffers);
 
-	for(U16 i = 0; i < maxFramesInFlight; i++){
-		Semaphore renderFinishedSemaphore;
-		Semaphore imageAvailableSemaphore;
-		Fence	fence;
-		renderFinishedSemaphore.Create (logicalDevice);
-		imageAvailableSemaphore.Create (logicalDevice);
-		fence.Create (logicalDevice);
-		inFlightFences.push_back (fence);
-		renderFinishedSemaphores.push_back (renderFinishedSemaphore);
-		imageAvailableSemaphores.push_back (imageAvailableSemaphore);
-	}
+
 }
 
 void BasicRenderCore::Destroy (){
-	for(Semaphore& semaphore : renderFinishedSemaphores)
-		semaphore.Destroy ();
-	for(Semaphore& semaphore : imageAvailableSemaphores)
-		semaphore.Destroy ();
-	for(Fence& fence: inFlightFences)
-		fence.Destroy ();
+	for(Buffer& buffer : buffers)
+		buffer.Destroy ();
 	commandPool.Destroy ();
 	frameBuffers.Destroy ();
 	for(Pipeline& pipeline : pipelines)
@@ -44,6 +34,14 @@ void BasicRenderCore::Destroy (){
 	renderPass.Destroy ();
 	imageviews.Destroy ();
 	swapChain.Destroy ();
+}
+
+VkSwapchainKHR BasicRenderCore::GetSwapChain (){
+	return swapChain.GetSwapchain();
+}
+
+const CommandBuffers & BasicRenderCore::GetCommandBuffers (){
+	return commandBuffers;
 }
 
 void BasicRenderCore::Recreate (Window& window){
@@ -65,78 +63,12 @@ void BasicRenderCore::Recreate (Window& window){
 	renderPass = CreateRenderPass (swapChain);
 	CreatePipelines (pipelines, swapChain, renderPass);
 	frameBuffers = CreateFrameBuffers (imageviews, renderPass);
-	commandBuffers = CreateCommandBuffers (commandPool, pipelines, frameBuffers);
+	commandBuffers = CreateCommandBuffers (commandPool, pipelines, frameBuffers, buffers);
 
-}
-
-void BasicRenderCore::Resize (){
-	framebufferResized = true;
 }
 
 void BasicRenderCore::Draw (const Queue& queue, Window& window){
-	U32 imageIndex;
-	vkWaitForFences (logicalDevice.GetLogicalDevice(),
-					 1, &inFlightFences[currentFrame].GetFence(),
-					 VK_TRUE, std::numeric_limits<uint64_t>::max ());
 
-	
-
-	VkResult result = vkAcquireNextImageKHR (logicalDevice.GetLogicalDevice (),
-						   swapChain.GetSwapchain(),
-						   std::numeric_limits<uint64_t>::max (),
-						   imageAvailableSemaphores[currentFrame].GetSemaphore (),
-						   VK_NULL_HANDLE,
-						   &imageIndex);
-
-	if(result == VK_ERROR_OUT_OF_DATE_KHR){
-		Recreate (window);
-		return;
-	}
-	else if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR){
-		ERROR ("failed to acquire swap chain image!");
-	}
-
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-	VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame].GetSemaphore()};
-	VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = waitSemaphores;
-	submitInfo.pWaitDstStageMask = waitStages;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
-
-	VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame].GetSemaphore()};
-	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = signalSemaphores;
-
-	vkResetFences (logicalDevice.GetLogicalDevice (),
-				   1, &inFlightFences[currentFrame].GetFence());
-
-	if(vkQueueSubmit (queue.GetQueue(), 1, &submitInfo, inFlightFences[currentFrame].GetFence()) != VK_SUCCESS){
-		ERROR ("failed to submit draw command buffer!");
-	}
-
-	VkSwapchainKHR swapChains[] = {swapChain.GetSwapchain()};
-	VkPresentInfoKHR presentInfo = {};
-	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = signalSemaphores;
-	presentInfo.swapchainCount = 1;
-	presentInfo.pSwapchains = swapChains;
-	presentInfo.pImageIndices = &imageIndex;
-
-	result = vkQueuePresentKHR (queue.GetQueue(), &presentInfo);
-	if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized){
-		framebufferResized = false;
-		Recreate (window);
-	}
-	else if(result != VK_SUCCESS){
-		throw std::runtime_error ("failed to present swap chain image!");
-	}
-
-	currentFrame = (currentFrame + 1) % maxFramesInFlight;
 }
 
 SwapChain BasicRenderCore::CreateSwapChain (const LogicalDevice & logicalDevice, const Surface & surface){
@@ -159,7 +91,7 @@ RenderPass BasicRenderCore::CreateRenderPass (const SwapChain & swapChain){
 
 void BasicRenderCore::CreatePipelines (std::vector<Pipeline>& pipelines, const SwapChain & swapChain, const RenderPass & renderPass){
 	Pipeline pipeline;
-	pipeline.Create ({VK::ShaderDetails ("Shaders/vert.spv",VK_SHADER_STAGE_VERTEX_BIT),
+	pipeline.Create <Vertex> ({VK::ShaderDetails ("Shaders/vert.spv",VK_SHADER_STAGE_VERTEX_BIT),
 					  VK::ShaderDetails ("Shaders/frag.spv",VK_SHADER_STAGE_FRAGMENT_BIT)},
 					 swapChain, renderPass);
 	pipelines.push_back (pipeline);
@@ -177,9 +109,26 @@ CommandPool BasicRenderCore::CreateCommandPool (const LogicalDevice & logicalDev
 	return commandPool;
 }
 
-CommandBuffers BasicRenderCore::CreateCommandBuffers (const CommandPool& commandPool, const std::vector<Pipeline>& pipelines, const FrameBuffers & frameBuffers){
+void BasicRenderCore::CreateBuffers (const LogicalDevice & logicalDevice, std::vector<Buffer>& vertexBuffers){
+	std::vector<Vertex> vertices = {
+	{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+	{{-0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}}};
+	
+	VertexBuffer<Vertex> vertexBuffer;
+	vertexBuffer.Create(logicalDevice, vertices);
+
+	StagingBuffer stagingBuffer;
+	stagingBuffer.CreateBuffer (logicalDevice, vertexBuffer.GetSize ());
+	BufferTransferer::MapMemory (stagingBuffer, vertices.data ());
+	BufferTransferer::TransferBufferData (stagingBuffer, vertexBuffer);
+	stagingBuffer.Destroy ();
+	vertexBuffers.push_back (vertexBuffer);
+}
+
+CommandBuffers BasicRenderCore::CreateCommandBuffers (const CommandPool& commandPool, const std::vector<Pipeline>& pipelines, const FrameBuffers & frameBuffers, const std::vector<Buffer>& vertexBuffers){
 	CommandBuffers commandBuffers;
-	commandBuffers.Create (commandPool, pipelines, frameBuffers);
+	commandBuffers.Create (commandPool, pipelines, frameBuffers, vertexBuffers);
 	return commandBuffers;
 }
 

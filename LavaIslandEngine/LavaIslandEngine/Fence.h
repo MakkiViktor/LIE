@@ -14,7 +14,7 @@ private:
 	VkFence fence;
 	VkAllocationCallbacks* allocator;
 public:
-	void Create (const LogicalDevice& device, VkAllocationCallbacks* allocator = nullptr);
+	void Create (const VkDevice& device, VkAllocationCallbacks* allocator = nullptr);
 	void Destroy ();
 	const VkFence& GetFence () const;
 

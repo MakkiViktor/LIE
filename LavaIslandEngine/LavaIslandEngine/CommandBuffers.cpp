@@ -3,9 +3,14 @@
 #include "CommandPool.h"
 #include "Pipeline.h"
 
+
 namespace VK{
 
-void CommandBuffers::Create (const CommandPool & commandPool, const std::vector<Pipeline>& pipelines, const FrameBuffers & frameBuffers){
+void CommandBuffers::Create (const CommandPool & commandPool,
+							 const std::vector<Pipeline>& pipelines,
+							 const FrameBuffers & frameBuffers,
+							 const std::vector<VkBuffer> vertexBuffers,
+							 const std::vector<VkDeviceSize> offsets){
 	commandBuffers.resize (frameBuffers.Size ());
 	VkCommandBufferAllocateInfo allocInfo = {};
 	FillAllocateInfo (allocInfo);
@@ -32,7 +37,7 @@ void CommandBuffers::Create (const CommandPool & commandPool, const std::vector<
 		renderPassInfo.framebuffer = frameBuffers[i];
 
 		vkCmdBeginRenderPass (commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-		FillCommands (pipelines, commandBuffers[i]);
+		FillCommands (pipelines, commandBuffers[i], vertexBuffers, offsets);
 		if(vkEndCommandBuffer (commandBuffers[i]) != VK_SUCCESS){
 			ERROR ("failed to record command buffer!");
 		}
@@ -40,6 +45,18 @@ void CommandBuffers::Create (const CommandPool & commandPool, const std::vector<
 	}
 	PRINT ("Command buffers set up");
 
+}
+
+void CommandBuffers::Create (const CommandPool & commandPool, const std::vector<Pipeline>& pipelines, const FrameBuffers & frameBuffers, const std::vector<Buffer> vertexBuffers){
+	std::vector<VkBuffer> buffers (vertexBuffers.size ());
+	std::vector<VkDeviceSize> offsets (vertexBuffers.size ());
+	SIZE offset = 0;
+	for(U16 i = 0; i < buffers.size (); i++){
+		buffers[i] = vertexBuffers[i].GetBuffer ();
+		offsets[i] = offset;
+		offset += sizeof (buffers[i]);
+	}
+	Create (commandPool, pipelines, frameBuffers, buffers, offsets);
 }
 
 const VkCommandBuffer& CommandBuffers::operator[](U16 index) const{
@@ -54,9 +71,13 @@ const VkCommandBuffer * CommandBuffers::Data () const{
 	return commandBuffers.data();
 }
 
-void CommandBuffers::FillCommands (const std::vector<Pipeline>& pipelines, const VkCommandBuffer& commandBuffer){
+void CommandBuffers::FillCommands (const std::vector<Pipeline>& pipelines,
+								   const VkCommandBuffer& commandBuffer,
+								   const std::vector<VkBuffer> vertexBuffers,
+								   const std::vector<VkDeviceSize> offsets){
 	for(const Pipeline& pipeline : pipelines){
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.GetPipeline());
+		vkCmdBindVertexBuffers (commandBuffer, 0, static_cast<U32>(vertexBuffers.size ()), vertexBuffers.data (), offsets.data ());
 		vkCmdDraw (commandBuffer, 3, 1, 0, 0);
 	}
 }

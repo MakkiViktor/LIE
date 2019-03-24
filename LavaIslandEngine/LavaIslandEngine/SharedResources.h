@@ -5,8 +5,8 @@
 #include "Window.h"
 
 namespace VK{
-static Window sharedWindow;
 
+static Window sharedWindow;
 VkExtent2D GetSharedWindowExtent();
 
 }

@@ -13,6 +13,7 @@
 #include "Surface.h"
 #include "Semaphore.h"
 #include "Fence.h"
+#include "Buffer.h"
 
 namespace VK{
 
@@ -21,10 +22,6 @@ class Window;
 
 class BasicRenderCore{
 private:
-	U16 maxFramesInFlight = 2;
-	U16 currentFrame = 0;
-	bool framebufferResized = false;
-
 	LogicalDevice logicalDevice;
 	Surface surface;
 	SwapChain swapChain;
@@ -33,10 +30,7 @@ private:
 	CommandPool commandPool;
 	FrameBuffers frameBuffers;
 	CommandBuffers commandBuffers;
-	std::vector<Semaphore> renderFinishedSemaphores;
-	std::vector<Semaphore> imageAvailableSemaphores;
-	std::vector<Fence> inFlightFences;
-
+	std::vector<Buffer> buffers;
 	std::vector<Pipeline> pipelines;
 
 	virtual SwapChain CreateSwapChain (const LogicalDevice& logicalDevice, const Surface& surface);
@@ -45,14 +39,18 @@ private:
 	virtual FrameBuffers CreateFrameBuffers (const ImageViews& imageViews, const RenderPass& renderPass);
 	virtual void CreatePipelines (std::vector<Pipeline>& pipelines ,const SwapChain& swapChain, const RenderPass& renderPass);
 	virtual CommandPool CreateCommandPool (const LogicalDevice& logicalDevice);
-	virtual CommandBuffers CreateCommandBuffers (const CommandPool& commandPool, const std::vector<Pipeline>& pipelines, const FrameBuffers& frameBuffers);
+	virtual void CreateBuffers (const LogicalDevice& logicalDevice, std::vector<Buffer>& buffers);
+	virtual CommandBuffers CreateCommandBuffers (const CommandPool& commandPool,
+												 const std::vector<Pipeline>& pipelines,
+												 const FrameBuffers& frameBuffers,
+												 const std::vector<Buffer>& buffers);
 
-	void Recreate (Window& window);
 public:
 	void Create (const LogicalDevice& logicalDevice, const Surface& surface);
+	void Recreate (Window& window);
 	void Destroy ();
-	
-	void Resize ();
+	VkSwapchainKHR GetSwapChain ();
+	const CommandBuffers& GetCommandBuffers ();
 	virtual void Draw (const Queue& queue, Window& window);
 
 };

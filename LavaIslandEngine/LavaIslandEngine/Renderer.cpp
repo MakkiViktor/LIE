@@ -1,27 +1,32 @@
 #include "Renderer.h"
 #include "Extension.h"
+#include "BufferTransferer.h"
 
 namespace VK{
 Renderer::Renderer (){
 	LIE::Debug::InitFileName ();
 	window = CreateWindow ();
 	window.SetResizeCallback ([&](GLFWwindow*, int, int){
-		for(BasicRenderCore& renderCore : renderCores)
-			renderCore.Resize (); });
+		RecreateCores();});
+
 	instance = CreateInstance ();
 	messangeGuard.Create (instance);
 	surface = CreateSurface (instance,window);
 	physicalDevice = CreatePhysicalDevice (instance, surface);
 	logicalDevice = CreateLogicalDevice (physicalDevice);
 	CreateQueues (queues, logicalDevice);
+	BufferTransferer::Create (logicalDevice,queues[0].GetQueue());
 	CreateRenderCores (renderCores, logicalDevice, surface);
+	drawer = CreateDrawer (logicalDevice);
 }
 
 Renderer::~Renderer (){
-	vkDeviceWaitIdle (logicalDevice.GetLogicalDevice());
+	drawer.Destroy ();
 	for(BasicRenderCore& renderCore : renderCores){
 		renderCore.Destroy ();
 	}
+
+	BufferTransferer::Destroy ();
 	logicalDevice.Destroy ();
 	surface.Destroy ();
 	messangeGuard.Destroy ();
@@ -40,12 +45,10 @@ void Renderer::SetWidthHeight (U16 width, U16 height){
 
 void Renderer::Draw (){
 	glfwPollEvents ();
-	for(BasicRenderCore& renderCore : renderCores){
-		for(const Queue& queue : queues){		
-			renderCore.Draw (queue, window);
-		}
+	for(const Queue& queue : queues){		
+		if(drawer.Draw (queue) != VK_SUCCESS)
+			RecreateCores();
 	}
-
 }
 
 Window Renderer::CreateWindow (){
@@ -88,6 +91,28 @@ void Renderer::CreateRenderCores (std::vector<BasicRenderCore>& renderCores, con
 	BasicRenderCore renderCore;
 	renderCore.Create (logicalDevice, surface);
 	renderCores.push_back (renderCore);
+}
+
+Drawer Renderer::CreateDrawer (const LogicalDevice& logicalDevice){
+	Drawer drawer;
+	drawer.Create (logicalDevice.GetLogicalDevice (), GetDrawDetails());
+	return drawer;
+}
+
+void Renderer::RecreateCores (){
+	for(BasicRenderCore& renderCore : renderCores)
+		renderCore.Recreate (window);
+	drawer.Destroy ();
+	drawer = CreateDrawer (logicalDevice);
+}
+
+std::vector<DrawDetails> Renderer::GetDrawDetails (){
+	std::vector<DrawDetails> drawDetails(renderCores.size());
+	for(U16 i = 0; i < drawDetails.size (); i++){
+		drawDetails[i].swapChain = renderCores[i].GetSwapChain ();
+		drawDetails[i].commandBuffers = renderCores[i].GetCommandBuffers ();
+	}
+	return drawDetails;
 }
 
 const Window& Renderer::GetWindow () const{

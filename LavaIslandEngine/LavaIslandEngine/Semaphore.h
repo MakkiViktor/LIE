@@ -13,7 +13,7 @@ private:
 
 	virtual void FillCreateInfo (VkSemaphoreCreateInfo& semaphoreInfo);
 public:
-	void Create (const LogicalDevice& device, VkAllocationCallbacks* allocator = nullptr);
+	void Create (const VkDevice& device, VkAllocationCallbacks* allocator = nullptr);
 	void Destroy ();
 	VkSemaphore GetSemaphore () const;
 };

@@ -14,6 +14,7 @@ static const bool IS_DEBUG = true;
 static const bool IS_DEBUG = false;
 #endif
 
+
 namespace VK{
 class Instance;
 }

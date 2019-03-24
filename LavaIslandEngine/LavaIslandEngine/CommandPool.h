@@ -18,7 +18,7 @@ private:
 public:
 	void Create (const LogicalDevice& device, VkAllocationCallbacks* allocator = nullptr);
 	void Destroy ();
-	void Free (const CommandBuffers& commandBuffers);
+	virtual void Free (const CommandBuffers& commandBuffers);
 	const VkCommandPool& GetCommandPool () const;
 	VkDevice GetLogicalDevice () const;
 
