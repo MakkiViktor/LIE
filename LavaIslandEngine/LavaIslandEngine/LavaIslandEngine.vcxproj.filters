@@ -59,6 +59,66 @@
     <ClCompile Include="ImageViews.cpp">
       <Filter>Source Files\VulkanObjects</Filter>
     </ClCompile>
+    <ClCompile Include="Pipeline.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderPass.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="FrameBuffers.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandPool.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandBuffers.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="Semaphore.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicRenderCore.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyInfo.cpp">
+      <Filter>Source Files\Structure</Filter>
+    </ClCompile>
+    <ClCompile Include="Surface.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="Fence.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="SharedResources.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexBuffer.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="Drawer.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="TransferPool.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="Buffer.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="StagingBuffer.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="TransferCommandBuffer.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="BufferTransferer.cpp">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -107,6 +167,66 @@
       <Filter>Source Files\VulkanObjects</Filter>
     </ClInclude>
     <ClInclude Include="ImageViews.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Pipeline.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderPass.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameBuffers.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandPool.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandBuffers.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Semaphore.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicRenderCore.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="CopyInfo.h">
+      <Filter>Source Files\Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="Fence.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="SharedResources.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexBuffer.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexIncludes.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Drawer.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="TransferPool.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Buffer.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="StagingBuffer.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="TransferCommandBuffer.h">
+      <Filter>Source Files\VulkanObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="BufferTransferer.h">
       <Filter>Source Files\VulkanObjects</Filter>
     </ClInclude>
   </ItemGroup>

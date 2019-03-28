@@ -1,4 +1,0 @@
-﻿  Starter.cpp
-c:\users\makki viktor\source\repos\lavaislandengine\lavaislandengine\physicaldevice.h(56): warning C4114: same type qualifier used more than once
-c:\users\makki viktor\source\repos\lavaislandengine\lavaislandengine\physicaldevice.h(88): warning C4114: same type qualifier used more than once
-  LavaIslandEngine.vcxproj -> C:\Users\Makki Viktor\source\repos\LavaIslandEngine\x64\Debug\LavaIslandEngine.exe

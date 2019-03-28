@@ -160,10 +160,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BasicRenderCore.cpp" />
+    <ClCompile Include="Buffer.cpp" />
+    <ClCompile Include="BufferTransferer.cpp" />
     <ClCompile Include="CommandBuffers.cpp" />
     <ClCompile Include="CommandPool.cpp" />
     <ClCompile Include="CopyInfo.cpp" />
     <ClCompile Include="Debug.cpp" />
+    <ClCompile Include="Drawer.cpp" />
     <ClCompile Include="Extension.cpp" />
     <ClCompile Include="Fence.cpp" />
     <ClCompile Include="FrameBuffers.cpp" />
@@ -178,10 +181,15 @@
     <ClCompile Include="RenderPass.cpp" />
     <ClCompile Include="Semaphore.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="SharedResources.cpp" />
+    <ClCompile Include="StagingBuffer.cpp" />
     <ClCompile Include="Starter.cpp" />
     <ClCompile Include="StructureOperations.cpp" />
     <ClCompile Include="Surface.cpp" />
     <ClCompile Include="SwapChain.cpp" />
+    <ClCompile Include="TransferCommandBuffer.cpp" />
+    <ClCompile Include="TransferPool.cpp" />
+    <ClCompile Include="VertexBuffer.cpp" />
     <ClCompile Include="VulkanTypeOperators.cpp" />
     <ClCompile Include="WindowSurface.cpp" />
     <ClCompile Include="Window.cpp" />
@@ -191,9 +199,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BasicRenderCore.h" />
+    <ClInclude Include="Buffer.h" />
+    <ClInclude Include="BufferTransferer.h" />
     <ClInclude Include="CommandBuffers.h" />
     <ClInclude Include="CommandPool.h" />
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="Drawer.h" />
     <ClInclude Include="Extension.h" />
     <ClInclude Include="Fence.h" />
     <ClInclude Include="FrameBuffers.h" />
@@ -209,10 +220,16 @@
     <ClInclude Include="RenderPass.h" />
     <ClInclude Include="Semaphore.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="SharedResources.h" />
+    <ClInclude Include="StagingBuffer.h" />
     <ClInclude Include="StructureOperations.h" />
     <ClInclude Include="Surface.h" />
     <ClInclude Include="SwapChain.h" />
+    <ClInclude Include="TransferCommandBuffer.h" />
+    <ClInclude Include="TransferPool.h" />
     <ClInclude Include="Types.h" />
+    <ClInclude Include="VertexBuffer.h" />
+    <ClInclude Include="VertexIncludes.h" />
     <ClInclude Include="VulkanTypeOperators.h" />
     <ClInclude Include="WindowSurface.h" />
     <ClInclude Include="Window.h" />
