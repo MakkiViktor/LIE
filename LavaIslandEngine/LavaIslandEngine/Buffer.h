@@ -41,6 +41,7 @@ public:
 	VkBuffer GetBuffer () const;
 	VkDeviceMemory GetBufferMemory () const;
 	SIZE GetSize () const;
+	VkDevice GetLogicalDevice () const;
 };
 }
 

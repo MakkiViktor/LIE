@@ -1,16 +1,15 @@
 #include "CommandBuffers.h"
 #include "FrameBuffers.h"
 #include "CommandPool.h"
-#include "Pipeline.h"
+
 
 
 namespace VK{
 
 void CommandBuffers::Create (const CommandPool & commandPool,
-							 const std::vector<Pipeline>& pipelines,
 							 const FrameBuffers & frameBuffers,
-							 const std::vector<VkBuffer> vertexBuffers,
-							 const std::vector<VkDeviceSize> offsets){
+							 const DescriptorSets& descriptorSets,
+							 const std::vector<GraphicsCommandDetails> graphicsDetails){
 	commandBuffers.resize (frameBuffers.Size ());
 	VkCommandBufferAllocateInfo allocInfo = {};
 	FillAllocateInfo (allocInfo);
@@ -37,26 +36,34 @@ void CommandBuffers::Create (const CommandPool & commandPool,
 		renderPassInfo.framebuffer = frameBuffers[i];
 
 		vkCmdBeginRenderPass (commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-		FillCommands (pipelines, commandBuffers[i], vertexBuffers, offsets);
+		FillCommands (commandBuffers[i], descriptorSets[i], graphicsDetails);
 		if(vkEndCommandBuffer (commandBuffers[i]) != VK_SUCCESS){
 			ERROR ("failed to record command buffer!");
 		}
 
 	}
 	PRINT ("Command buffers set up");
-
 }
 
-void CommandBuffers::Create (const CommandPool & commandPool, const std::vector<Pipeline>& pipelines, const FrameBuffers & frameBuffers, const std::vector<Buffer> vertexBuffers){
-	std::vector<VkBuffer> buffers (vertexBuffers.size ());
-	std::vector<VkDeviceSize> offsets (vertexBuffers.size ());
-	SIZE offset = 0;
-	for(U16 i = 0; i < buffers.size (); i++){
-		buffers[i] = vertexBuffers[i].GetBuffer ();
-		offsets[i] = offset;
-		offset += sizeof (buffers[i]);
+void CommandBuffers::Create (const CommandPool & commandPool,
+							 const FrameBuffers & frameBuffers,
+							 const DescriptorSets& descriptorSets,
+							 const std::vector<GraphicsData>& graphicsDatas){
+	//If its slow start on new Thread the selecting section
+	std::vector<GraphicsCommandDetails> details;
+	for(U32 dataIndex = 0; dataIndex < graphicsDatas.size (); dataIndex++){
+		std::vector<VkBuffer> vertexBuffers (graphicsDatas[dataIndex].vertexBuffers.size ());
+		std::vector<VkDeviceSize> offsets (graphicsDatas[dataIndex].vertexBuffers.size ());
+		SIZE offset = 0;
+		for(U16 i = 0; i < vertexBuffers.size (); i++){
+			vertexBuffers[i] = graphicsDatas[dataIndex].vertexBuffers[i].GetBuffer();
+			offsets[i] = offset;
+			offset += sizeof (vertexBuffers[i]);
+		}
+		details.push_back (GraphicsCommandDetails{graphicsDatas[dataIndex].pipeline,vertexBuffers, offsets , graphicsDatas[dataIndex].indexBuffer.GetBuffer(), graphicsDatas[dataIndex].indexBuffer.GetIndexCount ()});
 	}
-	Create (commandPool, pipelines, frameBuffers, buffers, offsets);
+
+	Create (commandPool, frameBuffers, descriptorSets, details);
 }
 
 const VkCommandBuffer& CommandBuffers::operator[](U16 index) const{
@@ -71,14 +78,15 @@ const VkCommandBuffer * CommandBuffers::Data () const{
 	return commandBuffers.data();
 }
 
-void CommandBuffers::FillCommands (const std::vector<Pipeline>& pipelines,
-								   const VkCommandBuffer& commandBuffer,
-								   const std::vector<VkBuffer> vertexBuffers,
-								   const std::vector<VkDeviceSize> offsets){
-	for(const Pipeline& pipeline : pipelines){
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.GetPipeline());
-		vkCmdBindVertexBuffers (commandBuffer, 0, static_cast<U32>(vertexBuffers.size ()), vertexBuffers.data (), offsets.data ());
-		vkCmdDraw (commandBuffer, 3, 1, 0, 0);
+void CommandBuffers::FillCommands (const VkCommandBuffer& commandBuffer,
+								   const VkDescriptorSet& descriptorSet,
+								   const std::vector<GraphicsCommandDetails> graphicsDetails){
+	for(const GraphicsCommandDetails& details : graphicsDetails){
+		vkCmdBindPipeline (commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, details.pipeline.GetPipeline ());
+		vkCmdBindVertexBuffers (commandBuffer, 0, static_cast<U32>(details.vertexBuffers.size ()), details.vertexBuffers.data (), details.offsets.data ());
+		vkCmdBindIndexBuffer (commandBuffer, details.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindDescriptorSets (commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, details.pipeline.GetPipelineLayout(), 0, 1, &descriptorSet, 0, nullptr);
+		vkCmdDrawIndexed (commandBuffer, details.indexCount, 1, 0, 0, 0);
 	}
 }
 
@@ -99,5 +107,5 @@ void CommandBuffers::FillRenderPassInfo (VkRenderPassBeginInfo& renderPassInfo, 
 	renderPassInfo.pClearValues = &clearColor;
 }
 
-
 }
+

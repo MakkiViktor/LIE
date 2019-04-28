@@ -6,6 +6,7 @@
 #include <vector>
 #include "Shader.h"
 #include "VertexIncludes.h"
+#include "UniformIncludes.h"
 
 namespace VK{
 
@@ -15,6 +16,7 @@ class RenderPass;
 class Pipeline{
 private:
 	VkPipeline graphicsPipeline;
+	VkDescriptorSetLayout descriptorSetLayout;
 	VkPipelineLayout pipelineLayout;
 	VkDevice device;
 	VkAllocationCallbacks* allocator;
@@ -30,11 +32,12 @@ private:
 	virtual void FillColorBlendStateCreateInfo (VkPipelineColorBlendStateCreateInfo& colorBlending,
 												const VkPipelineColorBlendAttachmentState& colorBlendAttachment);
 	virtual void FillDynamicStateCreateInfo (VkPipelineDynamicStateCreateInfo& dynamicState);
-	virtual void FillPipelineLayoutCreateInfo (VkPipelineLayoutCreateInfo& pipelineLayoutInfo);
+	virtual void FillPipelineLayoutCreateInfo (VkPipelineLayoutCreateInfo& pipelineLayoutInfo, const VkDescriptorSetLayout& descriptorSetLayout);
 
 	void Create (const std::vector<ShaderDetails>& shaderDetails,
 				 std::vector<VkVertexInputBindingDescription> bindingDescriptions,
 				 std::vector<VkVertexInputAttributeDescription> attributeDescriptions,
+				 VkDescriptorSetLayoutCreateInfo uniformLayoutInfo,
 				 const SwapChain& swapChain,
 				 const RenderPass& renderPass,
 				 VkAllocationCallbacks* allocator);
@@ -42,15 +45,19 @@ public:
 	void Destroy ();
 
 	const VkPipeline& GetPipeline () const;
+	VkDescriptorSetLayout GetDescriptorSetLayout () const;
+	VkPipelineLayout GetPipelineLayout () const;
 
-	template<class VERTEX>
+	template<class VERTEX, class UNIFORM>
 	void Create (const std::vector<ShaderDetails>& shaderDetails,
 				 const SwapChain& swapChain,
 				 const RenderPass& renderPass,
 				 VkAllocationCallbacks* allocator = nullptr){
+		VkDescriptorSetLayoutBinding uboLayoutBinding = {};
 		Create (shaderDetails,
 				VERTEX::GetBindingDescriptions (),
 				VERTEX::GetAttributeDescriptions (),
+				UNIFORM::GetDescriptorInfo (uboLayoutBinding),
 				swapChain,
 				renderPass,
 				allocator);

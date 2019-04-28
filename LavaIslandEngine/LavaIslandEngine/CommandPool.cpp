@@ -28,6 +28,7 @@ void CommandPool::Free (const CommandBuffers & commandBuffers){
 						  commandPool,
 						  static_cast<uint32_t>(commandBuffers.Size()),
 						  commandBuffers.Data ());
+	PRINT ("Command Buffer freed from pool");
 }
 
 

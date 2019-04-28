@@ -40,8 +40,6 @@ const std::vector<const char*>& PhysicalDeviceDetails::GetDeviceExtensions () co
 
 //PhysicalDevice
 
-PhysicalDevice::PhysicalDevice (){}
-
 void PhysicalDevice::Create (const Instance & instance, const Surface & surface, const PhysicalDeviceDetails & details){
 	std::vector<VkPhysicalDevice> devices (GetPhysicalDevices (instance));
 	SelectDevice (devices, surface, details);

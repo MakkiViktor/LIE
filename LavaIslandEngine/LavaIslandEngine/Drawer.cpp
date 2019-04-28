@@ -9,8 +9,9 @@ namespace VK{
 void Drawer::Create (const VkDevice& device, const std::vector<DrawDetails>& drawDetails){
 	this->device = device;
 	this->drawDetails = drawDetails;
+	this->commandBufferOffset = GetMaxCommandBufferSize ();
+	this->commanBuffers.resize (commandBufferOffset * drawDetails.size ());
 	this->imageIndexes.resize (drawDetails.size ());
-	this->commanBuffers.resize (drawDetails.size ());
 	frameSyncObjects.resize (maxFramesInFlight);
 
 	CopyFrameSwapChains ();
@@ -28,7 +29,7 @@ void Drawer::Destroy (){
 	PRINT ("Drawer destroyed");
 }
 
-VkResult Drawer::Draw (const Queue& queue){
+VkResult Drawer::Draw (const Queue& queue, std::function<void (U16 currentFrame)> update){
 	VkResult result;
 
 	vkWaitForFences (device,
@@ -36,7 +37,7 @@ VkResult Drawer::Draw (const Queue& queue){
 					 &inFlightFences[currentFrame].GetFence(),
 					 VK_TRUE, std::numeric_limits<uint64_t>::max ());
 
-	result = AquireAllImages ();
+	result = AquireAllImages (update);
 	if(result != VK_SUCCESS)
 		return result;
 
@@ -46,14 +47,33 @@ VkResult Drawer::Draw (const Queue& queue){
 	return result;
 }
 
+void Drawer::RefreshCommandBuffers (const std::vector<DrawDetails>& drawDetails){
+	for(U16 i = 0; i < this->drawDetails.size (); i++){
+		this->drawDetails[i].commandBuffers = drawDetails[i].commandBuffers;
+	}
+	this->commandBufferOffset = GetMaxCommandBufferSize ();
+	this->commanBuffers.resize (commandBufferOffset * drawDetails.size ());
+}
+
 void Drawer::RefreshCommandBuffers (){
 	for(U16 i = 0; i < imageIndexes.size(); i++){
-		commanBuffers[i] = drawDetails[i].commandBuffers[imageIndexes[i]];
+		for(U16 j = 0; j < commandBufferOffset; j++)
+		commanBuffers[i * commandBufferOffset + j] = drawDetails[i].commandBuffers[j][imageIndexes[i]];
 	}
 }
 
+SIZE Drawer::GetMaxCommandBufferSize (){
+	SIZE size = 0;
+	for(DrawDetails& detail: drawDetails){
+		SIZE s = detail.commandBuffers.size ();
+		if( s > size)
+			size = s;
+	}
+	return size;
+}
+
 bool Drawer::IsValidDetail (const DrawDetails & details){
-	return details.swapChain != VK_NULL_HANDLE && details.commandBuffers.Size() > 0;
+	return details.swapChain != VK_NULL_HANDLE;
 }
 
 void Drawer::CopyFrameSwapChains (){
@@ -101,10 +121,11 @@ VkResult Drawer::AquireImage (const VkSwapchainKHR & swapChain, U32& imageIndex,
 	return result;
 }
 
-VkResult Drawer::AquireAllImages (){
+VkResult Drawer::AquireAllImages (std::function<void (U16 currentFrame)> update){
 	for(U16 swapChainIndex = 0; swapChainIndex < drawDetails.size (); swapChainIndex++){
 		if(AquireImage (drawDetails[swapChainIndex].swapChain, imageIndexes[swapChainIndex], swapChainIndex) != VK_SUCCESS)
 			return VK_ERROR_OUT_OF_DATE_KHR;
+		update (imageIndexes[swapChainIndex]);
 	}
 	return VK_SUCCESS;
 }

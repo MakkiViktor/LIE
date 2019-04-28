@@ -28,6 +28,7 @@ private:
 	U16 width = 800;
 	U16 height = 600;
 
+	std::vector<MeshData<Vertex, UniformMVP>> meshDatas;
 	GLFWGuard glfw;
 	Window window;
 	Instance instance;
@@ -58,9 +59,10 @@ public:
 	void AddRenderCore (const BasicRenderCore& renderCore);
 	void SetWidthHeight (U16 width, U16 height);
 
-	const Window& GetWindow() const;
+	bool IsWindowClosed() const;
 
 	virtual void Draw ();
+	void AddMeshes (const std::vector<MeshData<Vertex, UniformMVP>>& meshDatas);
 };	
 
 

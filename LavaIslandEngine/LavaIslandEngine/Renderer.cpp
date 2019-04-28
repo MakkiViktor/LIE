@@ -41,14 +41,26 @@ void Renderer::AddRenderCore (const BasicRenderCore & renderCore){
 void Renderer::SetWidthHeight (U16 width, U16 height){
 	this->width = width;
 	this->height = height;
+	RecreateCores ();
 }
 
 void Renderer::Draw (){
 	glfwPollEvents ();
 	for(const Queue& queue : queues){		
-		if(drawer.Draw (queue) != VK_SUCCESS)
+		if(drawer.Draw (queue, [&](U16 currentFrame){
+			for(BasicRenderCore& core : renderCores){
+				core.UpdateUniformBuffers (currentFrame);
+			}
+		   }) != VK_SUCCESS)
 			RecreateCores();
 	}
+}
+
+void Renderer::AddMeshes (const std::vector<MeshData<Vertex, UniformMVP>>& meshDatas){
+	this->meshDatas.insert (this->meshDatas.cend(), meshDatas.cbegin(), meshDatas.cend());             
+	for(BasicRenderCore& core : renderCores)
+		core.AddMeshes (meshDatas);
+	drawer.RefreshCommandBuffers (GetDrawDetails());
 }
 
 Window Renderer::CreateWindow (){
@@ -101,7 +113,7 @@ Drawer Renderer::CreateDrawer (const LogicalDevice& logicalDevice){
 
 void Renderer::RecreateCores (){
 	for(BasicRenderCore& renderCore : renderCores)
-		renderCore.Recreate (window);
+		renderCore.Recreate (window, meshDatas);
 	drawer.Destroy ();
 	drawer = CreateDrawer (logicalDevice);
 }
@@ -115,8 +127,8 @@ std::vector<DrawDetails> Renderer::GetDrawDetails (){
 	return drawDetails;
 }
 
-const Window& Renderer::GetWindow () const{
-	return window;
+bool Renderer::IsWindowClosed () const{
+	return window.IsClosed();
 }
 
 }

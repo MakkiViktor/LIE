@@ -1,13 +1,32 @@
 //#define TEST_CODE
 
 #ifndef TEST_CODE
+
 #include "Renderer.h"
-#include "VertexBuffer.h"
+#include "VertexIncludes.h"
+#include "UniformIncludes.h"
 
 int main (){
+	const std::vector<VK::Vertex> vertices = {
+	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+	{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}};
+
+	const std::vector<U32> indices = {
+	0, 1, 2, 2, 3, 0
+	};
+
+	VK::UniformMVP mvp{glm::mat4()};
 
 	VK::Renderer renderer;
-	while(!renderer.GetWindow ().IsClosed ()){
+
+
+	renderer.AddMeshes ({{{{"Shaders/vert.spv", VK_SHADER_STAGE_VERTEX_BIT},
+						{"Shaders/frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT}},
+						vertices, indices, mvp}});
+
+	while(!renderer.IsWindowClosed()){
 		renderer.Draw ();
 	}
 }

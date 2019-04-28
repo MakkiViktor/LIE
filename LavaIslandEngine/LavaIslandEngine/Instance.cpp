@@ -28,7 +28,7 @@ void Instance::Destroy (){
 	}
 }
 
-const VkInstance & Instance::GetInstance () const{
+VkInstance Instance::GetInstance () const{
 	return instance;
 }
 

@@ -21,7 +21,7 @@ private:
 public:
 	void Create (const Extension& extensions, VkAllocationCallbacks* allocator = nullptr);
 	void Destroy ();
-	const VkInstance& GetInstance () const;
+	VkInstance GetInstance () const;
 };
 
 }

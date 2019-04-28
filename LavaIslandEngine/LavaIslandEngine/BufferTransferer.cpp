@@ -7,10 +7,12 @@ namespace VK{
 
 TransferPool BufferTransferer::transferPool;
 VkQueue BufferTransferer::transferQueue;
+LogicalDevice BufferTransferer::logicalDevice;
 
 void BufferTransferer::Create (const LogicalDevice& device,VkQueue transferQueue){
 	transferPool.Create (device);
 	BufferTransferer::transferQueue = transferQueue;
+	BufferTransferer::logicalDevice = device;
 }
 
 void BufferTransferer::Destroy (){
@@ -30,7 +32,6 @@ void BufferTransferer::TransferBufferData (const Buffer& source, const Buffer& d
 	vkQueueSubmit (transferQueue, 1, &submitInfo, VK_NULL_HANDLE);
 	vkQueueWaitIdle (transferQueue);
 	transferPool.Free (transferCommand);
-
 }
 
 void BufferTransferer::MapMemory (const Buffer & buffer, const void * mapData){

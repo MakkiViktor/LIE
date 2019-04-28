@@ -39,8 +39,9 @@ struct Vertex{
 		attributeDescriptions[1].offset = offsetof (Vertex, color);
 		return attributeDescriptions;
 	}
-
 };
+
+
 
 }
 #endif 

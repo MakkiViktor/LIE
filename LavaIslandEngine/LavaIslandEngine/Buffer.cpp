@@ -53,6 +53,10 @@ SIZE Buffer::GetSize () const{
 	return size;
 }
 
+VkDevice Buffer::GetLogicalDevice () const{
+	return device;
+}
+
 //BufferMemory
 
 U32 BufferMemory::GetMemoryPropertyFlags () const{

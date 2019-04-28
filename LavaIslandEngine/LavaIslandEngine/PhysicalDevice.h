@@ -77,7 +77,6 @@ private:
 	static bool HasPresentSupport (const VkPhysicalDevice& device, const Surface& surface, U32 queueIndex);
 	static bool HasExtensionSupport (const VkPhysicalDevice& device, const std::vector<const char*>& deviceExtensions);
 public:
-	PhysicalDevice ();
 	void Create (const Instance& instance, const Surface& surface, const PhysicalDeviceDetails& details);
 	
 	VkPhysicalDevice GetPhysicalDevice () const;

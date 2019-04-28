@@ -15,6 +15,8 @@ class StagingBuffer : public Buffer{
 private:
 	void FillBufferInfo (VkBufferCreateInfo& bufferInfo) override final;
 	BufferMemory CreateMemory (const LogicalDevice& device, const VkMemoryRequirements& memRequirements, VkAllocationCallbacks* allocator) const override final;
+public:
+	void Create (const LogicalDevice& device, SIZE memorySize, VkAllocationCallbacks* allocator = nullptr);
 };
 
 }

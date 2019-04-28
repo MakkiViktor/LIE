@@ -9,9 +9,18 @@ const VkPipeline& Pipeline::GetPipeline () const{
 	return graphicsPipeline;
 }
 
+VkDescriptorSetLayout Pipeline::GetDescriptorSetLayout () const{
+	return descriptorSetLayout;
+}
+
+VkPipelineLayout Pipeline::GetPipelineLayout () const{
+	return pipelineLayout;
+}
+
 void Pipeline::Create (const std::vector<ShaderDetails>& shaderDetails,
 					   std::vector<VkVertexInputBindingDescription> bindingDescriptions,
 					   std::vector<VkVertexInputAttributeDescription> attributeDescriptions,
+					   VkDescriptorSetLayoutCreateInfo uniformLayoutInfo,
 					   const SwapChain& swapChain,
 					   const RenderPass& renderPass,
 					   VkAllocationCallbacks* allocator){
@@ -26,6 +35,10 @@ void Pipeline::Create (const std::vector<ShaderDetails>& shaderDetails,
 		VkPipelineShaderStageCreateInfo fragShaderStageInfo = {};
 		FillShaderStageCreateInfo (fragShaderStageInfo, shaders.back ());
 		shaderCreateInfos.push_back (fragShaderStageInfo);
+	}
+
+	if(vkCreateDescriptorSetLayout (device, &uniformLayoutInfo, allocator, &descriptorSetLayout) != VK_SUCCESS){
+		ERROR("failed to create descriptor set layout!");
 	}
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
@@ -53,7 +66,7 @@ void Pipeline::Create (const std::vector<ShaderDetails>& shaderDetails,
 	FillDynamicStateCreateInfo (dynamicState);
 	FillColorBlendStateCreateInfo (colorBlending, colorBlendAttachment);
 	FillRasterizerCreateInfo (rasterizer);
-	FillPipelineLayoutCreateInfo (pipelineLayoutInfo);
+	FillPipelineLayoutCreateInfo (pipelineLayoutInfo, descriptorSetLayout);
 
 	if(vkCreatePipelineLayout (device, &pipelineLayoutInfo, allocator, &pipelineLayout) != VK_SUCCESS){
 		ERROR ("failed to create pipeline layout!");
@@ -85,15 +98,10 @@ void Pipeline::Create (const std::vector<ShaderDetails>& shaderDetails,
 }
 
 void Pipeline::Destroy (){
-	if(pipelineLayout != VK_NULL_HANDLE &&
-	   graphicsPipeline != VK_NULL_HANDLE
-	   ){
-		vkDestroyPipelineLayout (device, pipelineLayout, allocator);
-		vkDestroyPipeline (device, graphicsPipeline, allocator);
-		pipelineLayout = VK_NULL_HANDLE;
-		graphicsPipeline = VK_NULL_HANDLE;
-		PRINT ("Pipeline destroyed");
-	}
+	vkDestroyPipelineLayout (device, pipelineLayout, allocator);
+	vkDestroyPipeline (device, graphicsPipeline, allocator);
+	vkDestroyDescriptorSetLayout (device, descriptorSetLayout, allocator);
+	PRINT ("Pipeline destroyed");
 }
 
 std::vector<VkShaderStageFlagBits> Pipeline::GetShaderStagesFromShaders (const std::vector<Shader>& shaders){
@@ -142,7 +150,7 @@ void Pipeline::FillRasterizerCreateInfo (VkPipelineRasterizationStateCreateInfo 
 	rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 	rasterizer.lineWidth = 1.0f;
 	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-	rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	rasterizer.depthBiasEnable = VK_FALSE;
 	rasterizer.depthBiasConstantFactor = 0.0f; // Optional
 	rasterizer.depthBiasClamp = 0.0f; // Optional
@@ -202,10 +210,10 @@ void Pipeline::FillDynamicStateCreateInfo (VkPipelineDynamicStateCreateInfo & dy
 	dynamicState.pDynamicStates = dynamicStates;
 }
 
-void Pipeline::FillPipelineLayoutCreateInfo (VkPipelineLayoutCreateInfo & pipelineLayoutInfo){
+void Pipeline::FillPipelineLayoutCreateInfo (VkPipelineLayoutCreateInfo & pipelineLayoutInfo, const VkDescriptorSetLayout& descriptorSetLayout){
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 0; // Optional
-	pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
+	pipelineLayoutInfo.setLayoutCount = 1; // Optional
+	pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout; // Optional
 	pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
 	pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 }
