@@ -67,10 +67,13 @@ void Debug::PrintValidationMessage (VkDebugUtilsMessageTypeFlagsEXT messageType,
 	switch(messageType){
 	case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT:
 		Print ("VK Validation, general: " + message);
+		break;
 	case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:
 		Print ("VK Validation, violated specification: " + message);
+		break;
 	case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:
 		Print ("VK Validation, Performance: " + message);
+		break;
 	default:
 		Error ("VK Validation unknown messageType");
 	}

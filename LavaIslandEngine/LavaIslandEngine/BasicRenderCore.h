@@ -49,7 +49,7 @@ private:
 	std::vector<GraphicsData> graphicsDatas;
 
 	std::vector<CommandBuffers> commandBuffers;
-	std::vector<UniformBuffer<UniformMVP>> uniformBuffers;
+	std::vector<UniformBuffers<UniformMVP>> uniformBuffers;
 	std::vector<DescriptorSets> descriptorSets;
 
 	virtual SwapChain CreateSwapChain (const LogicalDevice& logicalDevice, const Surface& surface);
@@ -60,13 +60,12 @@ private:
 	
 	virtual FrameBuffers CreateFrameBuffers (const ImageViews& imageViews, const RenderPass& renderPass);
 
-	virtual void CreateUniformBuffers (std::vector<UniformBuffer<UniformMVP>>& uniformBuffers,
-									   const LogicalDevice& logicalDevice,
-									   const SwapChain& swapChain);
+	virtual UniformBuffers<UniformMVP> CreateUniformBuffers (const LogicalDevice& logicalDevice,
+															 const SwapChain& swapChain);
 
 	virtual Pipeline CreatePipeline (const SwapChain& swapChain, 
-									   const RenderPass& renderPass,
-									   const std::vector<ShaderDetails>& shaderDetails);
+									 const RenderPass& renderPass,
+									 const std::vector<ShaderDetails>& shaderDetails);
 	
 	virtual DescriptorPool CreateDescriptorPool (const SwapChain& swapChain);
 	

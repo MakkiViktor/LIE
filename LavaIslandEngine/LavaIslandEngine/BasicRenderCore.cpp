@@ -33,7 +33,7 @@ void BasicRenderCore::Destroy (){
 	descriptorPool.Destroy ();
 	frameBuffers.Destroy ();
 	DestroyGraphicsDatas ();
-	for(Buffer& buffer : uniformBuffers)
+	for(auto& buffer : uniformBuffers)
 		buffer.Destroy ();
 	uniformBuffers.clear ();
 	renderPass.Destroy ();
@@ -59,7 +59,7 @@ void BasicRenderCore::Recreate (Window& window, const std::vector<MeshData<Verte
 		commandPool.Free (command);
 	commandBuffers.clear ();
 	DestroyGraphicsDatas ();
-	for(Buffer& buffer : uniformBuffers)
+	for(auto& buffer : uniformBuffers)
 		buffer.Destroy ();
 	uniformBuffers.clear ();
 	renderPass.Destroy ();
@@ -73,8 +73,6 @@ void BasicRenderCore::Recreate (Window& window, const std::vector<MeshData<Verte
 	renderPass = CreateRenderPass (swapChain);
 	frameBuffers = CreateFrameBuffers (imageviews, renderPass);
 	AddMeshes (meshDatas);
-	CreateUniformBuffers (uniformBuffers, logicalDevice, swapChain);
-
 }
 
 SwapChain BasicRenderCore::CreateSwapChain (const LogicalDevice & logicalDevice, const Surface & surface){
@@ -115,16 +113,11 @@ FrameBuffers BasicRenderCore::CreateFrameBuffers (const ImageViews & imageViews,
 	return frameBuffers;
 }
 
-void BasicRenderCore::CreateUniformBuffers (std::vector<UniformBuffer<UniformMVP>>& uniformBuffers,
-											const LogicalDevice & logicalDevice,
-											const SwapChain & swapChain){
-	U16 imageCount = swapChain.GetImageCount ();
-	uniformBuffers.resize (imageCount);
-	for(U16 imageIndex = 0; imageIndex < imageCount; imageIndex++){
-		UniformBuffer<UniformMVP> uniformBuffer;
-		uniformBuffer.Create (logicalDevice);
-		uniformBuffers[imageIndex] = uniformBuffer;
-	}
+UniformBuffers<UniformMVP> BasicRenderCore::CreateUniformBuffers (const LogicalDevice & logicalDevice,
+																  const SwapChain & swapChain){
+	UniformBuffers<UniformMVP> uniforms;
+	uniforms.Create (logicalDevice, swapChain);
+	return uniforms;
 }
 
 CommandPool BasicRenderCore::CreateCommandPool (const LogicalDevice & logicalDevice){
@@ -186,17 +179,21 @@ void BasicRenderCore::DestroyGraphicsDatas (){
 		CreateMesh (meshData);
 	 for(CommandBuffers& command : commandBuffers)
 		 commandPool.Free (command);
-	 for(DescriptorSets& sets : descriptorSets)
-		 descriptorPool.Free (sets);
-	 descriptorSets.clear ();
+//	 for(DescriptorSets& sets : descriptorSets)
+//		 descriptorPool.Free (sets);
+//	 descriptorSets.clear ();
 	 commandBuffers.clear ();
 	 vkDeviceWaitIdle (logicalDevice.GetLogicalDevice ());
-	 
-	 CreateUniformBuffers (uniformBuffers, logicalDevice, swapChain);
-	 for(GraphicsData& data : graphicsDatas)
-		 descriptorSets.push_back (CreateDescriptorSets (swapChain, data.pipeline, uniformBuffers, descriptorPool));
+	 // descriptorsetbol nem kell tobb
+	 U16 i = 0;
+	 for(GraphicsData& data : graphicsDatas){
+		uniformBuffers.push_back(CreateUniformBuffers (logicalDevice, swapChain));
+		if(descriptorSets.size() == 0)
+			descriptorSets.push_back (CreateDescriptorSets (swapChain, graphicsDatas[0].pipeline, uniformBuffers[0].GetUniformBuffers (), descriptorPool));
+		commandBuffers.push_back (CreateCommandBuffers (commandPool, frameBuffers, descriptorSets[0],graphicsDatas));
+		i++;
+	 }
 	 //TODO descriptor setek mashogy
-	 commandBuffers.push_back (CreateCommandBuffers (commandPool, frameBuffers, descriptorSets[0],graphicsDatas));
  }
 
  void BasicRenderCore::UpdateUniformBuffers (U16 currentFrame){
@@ -207,14 +204,16 @@ void BasicRenderCore::DestroyGraphicsDatas (){
 	 float time = std::chrono::duration<float, std::chrono::seconds::period> (currentTime - startTime).count ();
 	 UniformMVP ubo = {};
 	 glm::mat4 model = glm::rotate (glm::mat4 (1.0f), time * glm::radians (90.0f), glm::vec3 (0.0f, 0.0f, 1.0f));
-	 glm::mat4 view = glm::lookAt (glm::vec3 (2.0f, 2.0f, 2.0f), glm::vec3 (0.0f, 0.0f, 0.0f), glm::vec3 (0.0f, 0.0f, 1.0f));
+	 glm::mat4 view = glm::lookAt (glm::vec3 (0.0f, 0.0f, 2.0f), glm::vec3 (0.0f, 0.0f, 0.0f), glm::vec3 (0.0f, 1.0f, 0.0f));
 	 glm::mat4 proj = glm::perspective (glm::radians (45.0f), 800.0f / 600.0f, 0.1f, 10.0f);
 	 proj[1][1] *= -1;
-	 ubo.mvp = proj * view * model;
-	 void* data;
-	 vkMapMemory (logicalDevice.GetLogicalDevice(), uniformBuffers[currentFrame].GetBufferMemory(), 0, sizeof (ubo), 0, &data);
-	 memcpy (data, &ubo, sizeof (ubo));
-	 vkUnmapMemory (logicalDevice.GetLogicalDevice (), uniformBuffers[currentFrame].GetBufferMemory());
+	 ubo.mvp = proj * view ;
+	 for(U16 i = 0 ; i < graphicsDatas.size(); i++){
+		 void* data;
+		 vkMapMemory (logicalDevice.GetLogicalDevice(), uniformBuffers[i].GetUniformBuffers()[currentFrame].GetBufferMemory(), 0, sizeof (ubo), 0, &data);
+		 memcpy (data, &ubo, sizeof (ubo));
+		 vkUnmapMemory (logicalDevice.GetLogicalDevice (), uniformBuffers[i].GetUniformBuffers()[currentFrame].GetBufferMemory());	 
+	 }
  }
 
 }

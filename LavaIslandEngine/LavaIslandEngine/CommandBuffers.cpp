@@ -86,6 +86,8 @@ void CommandBuffers::FillCommands (const VkCommandBuffer& commandBuffer,
 		vkCmdBindVertexBuffers (commandBuffer, 0, static_cast<U32>(details.vertexBuffers.size ()), details.vertexBuffers.data (), details.offsets.data ());
 		vkCmdBindIndexBuffer (commandBuffer, details.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 		vkCmdBindDescriptorSets (commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, details.pipeline.GetPipelineLayout(), 0, 1, &descriptorSet, 0, nullptr);
+		//TODO
+		vkCmdPushConstants (commandBuffer, details.pipeline.GetPipelineLayout (), VK_SHADER_STAGE_VERTEX_BIT, 0, 0, 0);
 		vkCmdDrawIndexed (commandBuffer, details.indexCount, 1, 0, 0, 0);
 	}
 }

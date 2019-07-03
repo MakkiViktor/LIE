@@ -1,10 +1,9 @@
-#ifndef LIE_VK_UNIFORM_BUFFER
 #define LIE_VK_UNIFORM_BUFFER
 #pragma once
 
 #include <glm/glm.hpp>
 #include <vector>
-#include "LogicalDevice.h"
+#include "SwapChain.h"
 #include "Buffer.h"
 
 namespace VK{
@@ -26,6 +25,18 @@ public:
 };
 
 template<class UNIFORM>
+class UniformBuffers{
+private:
+	std::vector<UniformBuffer<UNIFORM>> uniformBuffers;
+public:
+	void Create (const LogicalDevice & logicalDevice,
+				 const SwapChain & swapChain);
+	void Destroy ();
+	
+	const std::vector<UniformBuffer<UNIFORM>>& GetUniformBuffers () const;
+};
+
+template<class UNIFORM>
 inline void UniformBuffer<UNIFORM>::FillBufferInfo (VkBufferCreateInfo & bufferInfo){
 	bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -43,7 +54,27 @@ inline void UniformBuffer<UNIFORM>::Create (const LogicalDevice & device,  VkAll
 	CreateBuffer (device, sizeof (UNIFORM), allocator);
 }
 	
+template<class UNIFORM>
+inline void UniformBuffers<UNIFORM>::Create (const LogicalDevice & logicalDevice, const SwapChain & swapChain){
+	U16 imageCount = swapChain.GetImageCount ();
+	uniformBuffers.resize (imageCount);
+	for(U16 imageIndex = 0; imageIndex < imageCount; imageIndex++){
+		UniformBuffer<UNIFORM> uniformBuffer;
+		uniformBuffer.Create (logicalDevice);
+		uniformBuffers[imageIndex] = uniformBuffer;
+	}
 }
 
-#endif 
+template<class UNIFORM>
+inline void UniformBuffers<UNIFORM>::Destroy (){
+	for(Buffer& buffer : uniformBuffers)
+		buffer.Destroy ();
+}
+
+template<class UNIFORM>
+inline const std::vector<UniformBuffer<UNIFORM>>& UniformBuffers<UNIFORM>::GetUniformBuffers () const{
+	return uniformBuffers;
+}
+
+}
 

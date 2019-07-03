@@ -5,15 +5,31 @@
 #include "Renderer.h"
 #include "VertexIncludes.h"
 #include "UniformIncludes.h"
+#include "HOBTest.cpp"
 
 int main (){
-	const std::vector<VK::Vertex> vertices = {
+
+	//TODO
+	/*Pipelinehoz tartozzanak a descriptor Setek, vagy legalábbis kell egy mesh tároló, amihez a setek is tartoznak
+	a basicRenderCoreban az uniformokat kell az updateben beállítani a descriptoroknak
+	*/
+
+	//LIE::Test::Add (LIE::HOBTest ());
+	//LIE::Test::Run ();
+
+	std::vector<VK::Vertex> vertices = {
 	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
 	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
 	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
 	{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}};
 
-	const std::vector<U32> indices = {
+	std::vector<VK::Vertex> vertices2 = {
+	{{-1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}},
+	{{0.0f, -1.0f}, {0.0f, 1.0f, 0.0f}},
+	{{0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+	{{-1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}}};
+
+	std::vector<U32> indices = {
 	0, 1, 2, 2, 3, 0
 	};
 
@@ -25,6 +41,14 @@ int main (){
 	renderer.AddMeshes ({{{{"Shaders/vert.spv", VK_SHADER_STAGE_VERTEX_BIT},
 						{"Shaders/frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT}},
 						vertices, indices, mvp}});
+
+	renderer.AddMeshes ({{{{"Shaders/vert.spv", VK_SHADER_STAGE_VERTEX_BIT},
+						{"Shaders/frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT}},
+						vertices2, indices, mvp}});
+
+	vertices.clear ();
+	vertices2.clear ();
+	indices.clear ();
 
 	while(!renderer.IsWindowClosed()){
 		renderer.Draw ();
